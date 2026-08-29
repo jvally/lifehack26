@@ -121,10 +121,21 @@ describe("seedDemoData", () => {
         .filter((signal) => signal.signalType === "user_query")
         .map((signal) => signal.id),
     );
+    const userQuerySignals = data.marketSignals.filter(
+      (signal) => signal.signalType === "user_query",
+    );
+    const competitorSignals = data.marketSignals.filter(
+      (signal) => signal.signalType === "competitor_observation",
+    );
 
     expect(data.products).toHaveLength(10);
     expect(data.queries).toHaveLength(20);
-    expect(data.marketSignals).toHaveLength(22);
+    expect(userQuerySignals).toHaveLength(data.queries.length);
+    expect(
+      new Set(userQuerySignals.map((signal) => signal.id)).size,
+    ).toBe(userQuerySignals.length);
+    expect(competitorSignals.length).toBeGreaterThan(0);
+    expect(data.marketSignals.length).toBeGreaterThan(data.queries.length);
     expect(data.featureDefinitions).toHaveLength(12);
     expect(data.queries.every((query) => querySignalIds.has(query.id))).toBe(
       true,
