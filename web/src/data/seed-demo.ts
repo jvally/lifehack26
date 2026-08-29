@@ -10,7 +10,9 @@ import {
   type FeatureDefinition,
   type MarketSignal,
 } from "@/domain/market";
+import { loadCategoryFeatureDefinitions } from "@/data/category-definitions";
 import { JsonCatalogAdapter } from "@/features/catalog/adapters";
+import { detectCategory } from "@/features/catalog/detect-category";
 import { extractProductPassport } from "@/features/extraction/extract-passport";
 import { importMarketSignals } from "@/features/market/import-market-signals";
 import type { Database } from "@/lib/database.types";
@@ -145,11 +147,15 @@ export async function seedDemoData(
   dependencies: DemoSeedDependencies,
 ): Promise<DemoSeedResult> {
   const data = DemoSeedDataSchema.parse(input);
-  await dependencies.store.upsertCategory("running_shoes", "Running shoes");
-  await dependencies.store.upsertFeatureDefinitions(
-    "running_shoes",
-    data.featureDefinitions,
-  );
+  const categories = [...new Set(data.products.map((product) => product.category))];
+  for (const category of categories) {
+    const label = category.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    await dependencies.store.upsertCategory(category, label);
+    const definitions = category === "running_shoes"
+      ? data.featureDefinitions
+      : loadCategoryFeatureDefinitions(category);
+    await dependencies.store.upsertFeatureDefinitions(category, definitions);
+  }
 
   const normalizedProducts = new JsonCatalogAdapter().parse(
     JSON.stringify(data.products),
@@ -285,7 +291,7 @@ export async function loadDemoSeedData(
   const demoQueries = DemoQuerySchema.array().parse(queries);
   const querySignals: MarketSignal[] = demoQueries.map((query) => ({
     id: query.id,
-    category: "running_shoes",
+    category: detectCategory(query.query),
     signalType: "user_query",
     rawText: query.query,
     parsedIntent: {

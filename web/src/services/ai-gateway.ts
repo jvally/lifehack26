@@ -106,7 +106,7 @@ export class OpenAIAiGateway implements AiGateway {
           {
             role: "system",
             content:
-              "Extract only facts explicitly supported by the seller listing. Use ai_inferred for extracted facts. Represent absent values as null with missing status. Never copy competitor observations into this seller's claims.",
+              "Extract only facts explicitly supported by the seller listing. Automatically classify the product into one of running_shoes, clothing, furniture, accessories, makeup, groceries, or sports_equipment. Use ai_inferred for extracted facts. Represent absent values as null with missing status. Never copy competitor observations into this seller's claims.",
           },
           { role: "user", content: JSON.stringify(product) },
         ],
@@ -133,7 +133,7 @@ export class OpenAIAiGateway implements AiGateway {
           {
             role: "system",
             content:
-              "Convert the shopping request into normalized intent. Put non-negotiable requirements in hardConstraints and softer wishes in preferences. Do not invent constraints.",
+              "Convert the shopping request into normalized intent and classify its category as one of running_shoes, clothing, furniture, accessories, makeup, groceries, or sports_equipment. Put non-negotiable requirements in hardConstraints and softer wishes in preferences. For example, 'Find me a sustainable skincare routine for oily skin that takes less than 5 minutes every morning' is makeup with sustainability, oily-skin, and time constraints. Do not invent constraints.",
           },
           { role: "user", content: query },
         ],
