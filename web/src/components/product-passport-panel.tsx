@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FeatureDefinition } from "@/domain/market";
 import type { ProductPassport } from "@/domain/passport";
 import { EvidenceBadge } from "./evidence-badge";
-
-const EXPANDABLE_VALUE_LENGTH = 80;
 
 function displayValue(value: ProductPassport["features"][number]["value"]) {
   return Array.isArray(value)
@@ -23,6 +21,11 @@ export function ProductPassportPanel({
   changedFeatureKeys?: string[];
 }) {
   const [expandedFeatureKeys, setExpandedFeatureKeys] = useState<string[]>([]);
+  const [overflowingFeatureKeys, setOverflowingFeatureKeys] = useState<string[]>([]);
+  const [savingFeatureKeys, setSavingFeatureKeys] = useState<string[]>([]);
+  const [savedFeatureKeys, setSavedFeatureKeys] = useState<string[]>([]);
+  const previewRefs = useRef(new Map<string, HTMLParagraphElement>());
+  const saveTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const [draftValues, setDraftValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       passport.features.map((feature) => [
@@ -33,6 +36,31 @@ export function ProductPassportPanel({
   );
   const byKey = new Map(passport.features.map((feature) => [feature.key, feature]));
 
+  useEffect(() => {
+    const updateOverflowingFeatures = () => {
+      const nextKeys = definitions
+        .filter(({ key }) => {
+          const preview = previewRefs.current.get(key);
+          return preview ? preview.scrollHeight > preview.clientHeight + 1 : false;
+        })
+        .map(({ key }) => key);
+
+      setOverflowingFeatureKeys((current) =>
+        current.length === nextKeys.length &&
+        current.every((key, index) => key === nextKeys[index])
+          ? current
+          : nextKeys,
+      );
+    };
+
+    updateOverflowingFeatures();
+    if (typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(updateOverflowingFeatures);
+    previewRefs.current.forEach((preview) => observer.observe(preview));
+    return () => observer.disconnect();
+  }, [definitions, passport.features]);
+
   const toggleFeature = (key: string) => {
     setExpandedFeatureKeys((current) =>
       current.includes(key)
@@ -40,6 +68,34 @@ export function ProductPassportPanel({
         : [...current, key],
     );
   };
+
+  const saveFeature = (key: string) => {
+    setSavedFeatureKeys((current) => current.filter((featureKey) => featureKey !== key));
+    setSavingFeatureKeys((current) => [...new Set([...current, key])]);
+
+    const saveTimer = setTimeout(() => {
+      saveTimers.current.delete(saveTimer);
+      setSavingFeatureKeys((current) => current.filter((featureKey) => featureKey !== key));
+      setSavedFeatureKeys((current) => [...new Set([...current, key])]);
+
+      const confirmationTimer = setTimeout(() => {
+        saveTimers.current.delete(confirmationTimer);
+        setSavedFeatureKeys((current) =>
+          current.filter((featureKey) => featureKey !== key),
+        );
+      }, 2_000);
+      saveTimers.current.add(confirmationTimer);
+    }, 450);
+    saveTimers.current.add(saveTimer);
+  };
+
+  useEffect(
+    () => () => {
+      saveTimers.current.forEach((timer) => clearTimeout(timer));
+      saveTimers.current.clear();
+    },
+    [],
+  );
 
   return (
     <section className="surface-card p-5 sm:p-6" aria-labelledby="passport-heading">
@@ -71,12 +127,16 @@ export function ProductPassportPanel({
           const expanded = expandedFeatureKeys.includes(definition.key);
           const inputId = `product-feature-${definition.key}`;
           const detailId = `${inputId}-details`;
-          const hasLongValue = displayValue(feature.value).length > EXPANDABLE_VALUE_LENGTH;
+          const hasOverflowingContent = overflowingFeatureKeys.includes(
+            definition.key,
+          );
+          const saving = savingFeatureKeys.includes(definition.key);
+          const saved = savedFeatureKeys.includes(definition.key);
 
           return (
             <div
               key={definition.key}
-              className={`min-h-[148px] rounded-xl border border-[var(--border)] bg-[var(--canvas)] p-4 ${
+              className={`${expanded ? "min-h-[248px]" : hasOverflowingContent ? "h-[248px] overflow-hidden" : "h-[224px] overflow-hidden"} rounded-xl border border-[var(--border)] bg-[var(--canvas)] p-4 ${
                 changedFeatureKeys.includes(definition.key) ? "changed-feature" : ""
               }`}
             >
@@ -84,6 +144,18 @@ export function ProductPassportPanel({
                 <p className="font-medium text-[var(--ink)]">{definition.label}</p>
                 <EvidenceBadge status={feature.status} />
               </div>
+              <p
+                ref={(element) => {
+                  if (element) previewRefs.current.set(definition.key, element);
+                  else previewRefs.current.delete(definition.key);
+                }}
+                className={`mt-2 text-sm leading-5 text-[var(--muted)] ${
+                  expanded ? "" : "feature-value-preview"
+                }`}
+              >
+                {displayValue(feature.value)}
+                {feature.value !== null && feature.unit ? ` ${feature.unit}` : ""}
+              </p>
               <label htmlFor={inputId} className="sr-only">
                 {definition.label}
               </label>
@@ -99,7 +171,20 @@ export function ProductPassportPanel({
                 className="mt-3 min-h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-sm text-[var(--ink)]"
                 placeholder={`Enter ${definition.label.toLowerCase()}`}
               />
-              {hasLongValue && (
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => saveFeature(definition.key)}
+                  className="button-primary min-h-10 px-3 text-sm font-semibold disabled:cursor-wait disabled:opacity-70"
+                >
+                  {saving ? "Saving…" : "Save"}
+                </button>
+                <span className="text-sm text-[var(--verified)]" aria-live="polite">
+                  {saved ? "Saved" : ""}
+                </span>
+              </div>
+              {hasOverflowingContent && (
                 <button
                   type="button"
                   aria-controls={detailId}
@@ -110,13 +195,9 @@ export function ProductPassportPanel({
                   {expanded ? "Show less" : "Show more"}
                 </button>
               )}
-              {hasLongValue && expanded && (
+              {hasOverflowingContent && expanded && (
                 <div id={detailId} className="mt-3 border-t border-[var(--border)] pt-3 text-sm text-[var(--muted)]">
-                  <p>
-                    Current value: {displayValue(feature.value)}
-                    {feature.value !== null && feature.unit ? ` ${feature.unit}` : ""}
-                  </p>
-                  <p className="mt-1">Status: {feature.status.replace("_", " ")}</p>
+                  <p>Status: {feature.status.replace("_", " ")}</p>
                 </div>
               )}
             </div>
