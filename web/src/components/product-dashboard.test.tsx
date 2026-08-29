@@ -79,8 +79,9 @@ describe("ProductDashboard", () => {
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 
-  it("uses the real session ID and next gap returned by the API", async () => {
+  it("uses the real session ID and next gaps returned by the APIs", async () => {
     const dashboard = makeMockDashboard("product-1");
+    const firstGap = dashboard.evaluation.gaps[0];
     const nextGap = dashboard.evaluation.gaps[1];
     const fetchMock = vi
       .fn()
@@ -97,7 +98,14 @@ describe("ProductDashboard", () => {
         }),
       )
       .mockResolvedValueOnce(
-        apiResponse({ session: { id: "session-live-1" }, nextGap }, 201),
+        apiResponse({ session: { id: "session-live-1" }, nextGap: firstGap }, 201),
+      )
+      .mockResolvedValueOnce(
+        apiResponse({
+          passport: dashboard.passport,
+          evaluation: dashboard.evaluation,
+          nextGap,
+        }),
       );
     vi.stubGlobal("fetch", fetchMock);
     render(<ProductDashboard productId="product-1" />);
@@ -116,8 +124,27 @@ describe("ProductDashboard", () => {
     const coach = await screen.findByRole("region", {
       name: "One answer, more coverage",
     });
-    expect(within(coach).getByText(nextGap.question)).toBeInTheDocument();
+    expect(within(coach).getByText(firstGap.question)).toBeInTheDocument();
     expect(within(coach).getByText(/Interview in progress/)).toBeInTheDocument();
+    await userEvent.type(within(coach).getByLabelText("Your answer"), "220");
+    await userEvent.type(
+      within(coach).getByLabelText("Supporting evidence"),
+      "Manufacturer specification sheet.",
+    );
+    await userEvent.click(
+      within(coach).getByRole("button", { name: "Save answer" }),
+    );
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/interviews/session-live-1/answers",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const nextCoach = await screen.findByRole("region", {
+      name: "One answer, more coverage",
+    });
+    expect(within(nextCoach).getByText(nextGap.question)).toBeInTheDocument();
   });
 
   it("uses mock data only when offline demo mode is explicit", async () => {

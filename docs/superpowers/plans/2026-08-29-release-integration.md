@@ -34,7 +34,7 @@
 - Consumes: `Response` objects using `{ ok, data, error, requestId }`.
 - Produces: `readApiData<T>(response, fallback): Promise<T>` and `ClientApiError` with a user-safe message and optional request ID.
 
-- [ ] **Step 1: Write failing envelope tests**
+- [x] **Step 1: Write failing envelope tests**
 
 Test successful data, shared API errors, non-JSON failures, and missing data:
 
@@ -60,13 +60,13 @@ describe("readApiData", () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused tests and confirm failure**
+- [x] **Step 2: Run the focused tests and confirm failure**
 
 Run: `npm test -- src/lib/client-api.test.ts`
 
 Expected: FAIL because `client-api.ts` does not exist.
 
-- [ ] **Step 3: Implement the typed reader**
+- [x] **Step 3: Implement the typed reader**
 
 Implement:
 
@@ -103,21 +103,21 @@ export async function readApiData<T>(response: Response, fallback: string): Prom
 }
 ```
 
-- [ ] **Step 4: Route import form responses through `readApiData`**
+- [x] **Step 4: Route import form responses through `readApiData`**
 
 Use `readApiData<{ productIds: string[] }>` for import and `readApiData<unknown>` for extraction. Bind caught errors and display `error.message`; remove the form-local envelope and request-ID duplication.
 
-- [ ] **Step 5: Extend import form tests**
+- [x] **Step 5: Extend import form tests**
 
 Add a failed import response with `requestId: "request-import"` and assert the alert contains `Request ID: request-import`.
 
-- [ ] **Step 6: Run Task 1 tests**
+- [x] **Step 6: Run Task 1 tests**
 
 Run: `npm test -- src/lib/client-api.test.ts src/components/import-listing-form.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit Task 1**
+- [x] **Step 7: Commit Task 1**
 
 ```text
 git add web/src/lib/client-api.ts web/src/lib/client-api.test.ts web/src/components/import-listing-form.tsx web/src/components/import-listing-form.test.tsx
@@ -140,7 +140,7 @@ git commit -m "feat: standardize client API errors"
 - Consumes: `readApiData<T>`, real product/evaluation/interview endpoints, and `NEXT_PUBLIC_OFFLINE_DEMO`.
 - Produces: `ProductDashboard({ productId, offlineDemo? })`, a live-first state machine, and explicit offline behavior.
 
-- [ ] **Step 1: Replace the existing dashboard test with failing state tests**
+- [x] **Step 1: Replace the existing dashboard test with failing state tests**
 
 Cover these cases:
 
@@ -187,25 +187,25 @@ it("shows a request ID instead of mock data when live initialization fails", asy
 });
 ```
 
-- [ ] **Step 2: Add failing offline-mode tests**
+- [x] **Step 2: Add failing offline-mode tests**
 
 Render with `offlineDemo={true}`, assert CloudRun Pro is shown, and assert `fetch` is not called during dashboard initialization or recommendation simulation.
 
-- [ ] **Step 3: Add failing SellerChat error and gap-change tests**
+- [x] **Step 3: Add failing SellerChat error and gap-change tests**
 
 Assert that an `Error("Save failed. Request ID: request-answer")` from `onUpdate` appears verbatim. Rerender with a different feature and assert the answer, evidence, unit, and previous notice reset.
 
-- [ ] **Step 4: Add failing simulation tests**
+- [x] **Step 4: Add failing simulation tests**
 
 Assert that live errors display their request ID and clear previous results. Assert that offline simulation returns deterministic mock results without calling `fetch`.
 
-- [ ] **Step 5: Run focused component tests and confirm failure**
+- [x] **Step 5: Run focused component tests and confirm failure**
 
 Run: `npm test -- src/components/product-dashboard.test.tsx src/components/seller-chat.test.tsx src/components/before-after-panel.test.tsx`
 
 Expected: FAIL against the current implicit mock mode and generic answer error.
 
-- [ ] **Step 6: Implement the live-first dashboard state machine**
+- [x] **Step 6: Implement the live-first dashboard state machine**
 
 Use these states:
 
@@ -228,25 +228,25 @@ export function ProductDashboard({
 
 For live initialization, require the Product Passport from GET and require both evaluation and intelligence from POST. Only then set a complete dashboard and `phase = "ready"`. Render a loading panel during `loading`, an error panel with retry during `error`, and never construct mock data in either state.
 
-- [ ] **Step 7: Implement deterministic coach startup**
+- [x] **Step 7: Implement deterministic coach startup**
 
 Add `coachStarting`. Keep coach controls disabled unless phase is `ready` or `offline`. In live mode, set `coachOpen` only after `data.session.id` arrives, store that ID, and set `nextGap` from the response.
 
-- [ ] **Step 8: Implement live answer progression**
+- [x] **Step 8: Implement live answer progression**
 
 Use `readApiData` for answers. Store returned passport and evaluation, then set `nextGap` exactly to the returned value. SellerChat must display the caught `Error.message` and reset its form state when `gap.featureKey` changes.
 
-- [ ] **Step 9: Implement explicit simulation behavior**
+- [x] **Step 9: Implement explicit simulation behavior**
 
 Rename `allowMockFallback` to `offlineDemo`. In offline mode, create mock results without a network request. In live mode, use `readApiData`, clear stale results when comparing, and display the thrown message on failure.
 
-- [ ] **Step 10: Run Task 2 tests**
+- [x] **Step 10: Run Task 2 tests**
 
 Run: `npm test -- src/components src/app/page.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 11: Commit Task 2**
+- [x] **Step 11: Commit Task 2**
 
 ```text
 git add web/src/components
@@ -268,17 +268,17 @@ git commit -m "feat: make dashboard integration live first"
 - Consumes: `PLAYWRIGHT_MODE`, `PLAYWRIGHT_BASE_URL`, installed Next and Playwright CLIs, and release environment values for live local runs.
 - Produces: `npm run e2e:offline` and `npm run e2e:live`, both with bounded execution and deterministic server cleanup.
 
-- [ ] **Step 1: Add runner unit boundaries**
+- [x] **Step 1: Add runner unit boundaries**
 
 Export pure helpers from `run-playwright.ts` for mode parsing and server environment construction. Add `web/scripts/run-playwright.test.ts` that verifies offline mode sets `NEXT_PUBLIC_OFFLINE_DEMO=true`, live mode sets it to `false`, and an explicit base URL disables local server startup.
 
-- [ ] **Step 2: Run the runner test and confirm failure**
+- [x] **Step 2: Run the runner test and confirm failure**
 
 Run: `npm test -- scripts/run-playwright.test.ts`
 
 Expected: FAIL because the runner does not exist.
 
-- [ ] **Step 3: Implement the Node-owned lifecycle**
+- [x] **Step 3: Implement the Node-owned lifecycle**
 
 The runner must:
 
@@ -292,7 +292,7 @@ The runner must:
 8. On Windows, use `taskkill /PID <pid> /T /F`; elsewhere, terminate the detached process group.
 9. Exit with the build, server, or Playwright failure code.
 
-- [ ] **Step 4: Split Playwright modes**
+- [x] **Step 4: Split Playwright modes**
 
 Configure `testMatch` from `PLAYWRIGHT_MODE`:
 
@@ -309,17 +309,17 @@ export default defineConfig({
 
 Remove Playwright's `webServer` plugin because the Node runner owns the lifecycle.
 
-- [ ] **Step 5: Make offline coverage explicit**
+- [x] **Step 5: Make offline coverage explicit**
 
 Rename the existing test, keep only import and extract route interception, and assert recommendation comparison uses offline behavior. The test title must include `offline demo`.
 
-- [ ] **Step 6: Add the live journey**
+- [x] **Step 6: Add the live journey**
 
 The live test must not call `page.route`. It must import a listing, capture the UUID from the resulting URL, wait for real evaluation, start the coach, answer the rendered control according to its element type, submit evidence, run simulation, and GET `/api/products/{uuid}/export` with `page.request`.
 
 Skip before navigation unless `PLAYWRIGHT_MODE === "live"`. A live failure is a real failure once the live command is selected.
 
-- [ ] **Step 7: Add package scripts**
+- [x] **Step 7: Add package scripts**
 
 ```json
 {
@@ -331,7 +331,7 @@ Skip before navigation unless `PLAYWRIGHT_MODE === "live"`. A live failure is a 
 }
 ```
 
-- [ ] **Step 8: Run the offline gate twice**
+- [x] **Step 8: Run the offline gate twice**
 
 Run:
 
@@ -342,13 +342,13 @@ npm run e2e:offline
 
 Expected: both commands PASS, both exit, and `netstat -ano` shows no listener on port 3000 afterward.
 
-- [ ] **Step 9: Run the runner and browser tests**
+- [x] **Step 9: Run the runner and browser tests**
 
 Run: `npm test -- scripts/run-playwright.test.ts && npm run e2e:offline`
 
 Expected: PASS.
 
-- [ ] **Step 10: Commit Task 3**
+- [x] **Step 10: Commit Task 3**
 
 ```text
 git add web/scripts web/playwright.config.ts web/e2e web/package.json
@@ -372,7 +372,7 @@ git commit -m "test: separate offline and live browser gates"
 - Consumes: the six existing Supabase and OpenAI environment variables.
 - Produces: `missingReleaseEnvironmentKeys`, `npm run check:release-env`, `npm run seed:release`, CI, and a complete preview verification runbook.
 
-- [ ] **Step 1: Write failing environment-key tests**
+- [x] **Step 1: Write failing environment-key tests**
 
 Add:
 
@@ -388,19 +388,19 @@ it("reports missing release variables without values", () => {
 });
 ```
 
-- [ ] **Step 2: Run the environment tests and confirm failure**
+- [x] **Step 2: Run the environment tests and confirm failure**
 
 Run: `npm test -- src/lib/env.test.ts`
 
 Expected: FAIL because `missingReleaseEnvironmentKeys` does not exist.
 
-- [ ] **Step 3: Implement environment-name validation**
+- [x] **Step 3: Implement environment-name validation**
 
 Export the ordered `RELEASE_ENVIRONMENT_KEYS` tuple and `missingReleaseEnvironmentKeys(source)`. The function returns names only and never includes values.
 
 Create `check-release-env.ts` that loads `.env.local` and `.env`, prints missing names to stderr, exits 1 when any are absent, and prints a success count without values when all are present.
 
-- [ ] **Step 4: Add release scripts**
+- [x] **Step 4: Add release scripts**
 
 Add:
 
@@ -413,7 +413,7 @@ Add:
 }
 ```
 
-- [ ] **Step 5: Document explicit offline and live workflows**
+- [x] **Step 5: Document explicit offline and live workflows**
 
 Add `NEXT_PUBLIC_OFFLINE_DEMO=false` to `.env.example`. Update README with:
 
@@ -426,7 +426,7 @@ Add `NEXT_PUBLIC_OFFLINE_DEMO=false` to `.env.example`. Update README with:
 7. The distinction between code-complete and release-verified.
 8. The Phase 2 authentication limitation.
 
-- [ ] **Step 6: Add CI**
+- [x] **Step 6: Add CI**
 
 Create a workflow for pushes and pull requests to `main`:
 
@@ -458,7 +458,7 @@ jobs:
       - run: npm run e2e:offline
 ```
 
-- [ ] **Step 7: Run all secret-free gates**
+- [x] **Step 7: Run all secret-free gates**
 
 Run:
 
@@ -474,13 +474,13 @@ git diff --check
 
 Expected: every command exits 0 and the Git worktree is clean after committing.
 
-- [ ] **Step 8: Confirm the credential boundary**
+- [x] **Step 8: Confirm the credential boundary**
 
 Run: `npm run check:release-env`
 
 Expected in the current workspace: exit 1 listing missing variable names only. Record live migration, seed, and preview E2E as blocked until the user configures values.
 
-- [ ] **Step 9: Commit Task 4**
+- [x] **Step 9: Commit Task 4**
 
 ```text
 git add .github/workflows/ci.yml web/src/scripts web/src/lib/env.ts web/src/lib/env.test.ts web/.env.example web/package.json web/README.md
@@ -498,29 +498,37 @@ git commit -m "ci: add controlled demo release gates"
 - Consumes: all Phase 1 code-complete evidence.
 - Produces: checked plan, review evidence, and a clear list of credential-dependent release steps.
 
-- [ ] **Step 1: Mark completed plan steps**
+- [x] **Step 1: Mark completed plan steps**
 
 Change completed checkboxes from `[ ]` to `[x]`. Leave credential-dependent release verification unchecked with a short evidence note.
 
-- [ ] **Step 2: Review the branch against the specification**
+- [x] **Step 2: Review the branch against the specification**
 
 Inspect `git diff main...HEAD`, scan for secrets and accidental artifacts, and verify there are no remaining automatic mock fallbacks in live code.
 
-- [ ] **Step 3: Run final verification**
+- [x] **Step 3: Run final verification**
 
 Run the complete secret-free gate from Task 4 again on the exact final tree.
 
-- [ ] **Step 4: Request code review**
+- [x] **Step 4: Perform code review**
 
 Review correctness, test coverage, security boundaries, and spec compliance. Fix Critical and Important findings through new failing tests before completion.
 
-- [ ] **Step 5: Commit plan completion evidence**
+- [x] **Step 5: Commit plan completion evidence**
 
 ```text
 git add docs/superpowers/plans/2026-08-29-release-integration.md
 git commit -m "docs: record phase one verification"
 ```
 
-- [ ] **Step 6: Report the release boundary**
+- [x] **Step 6: Report the release boundary**
 
 Report code-complete checks separately from blocked live checks. Do not claim deploy-ready until migrations, double seed, live E2E, and preview verification pass with configured credentials.
+
+## Completion evidence
+
+- Secret-free verification passed on 2026-08-29: 29 test files and 94 tests, type checking, lint, production build, offline Playwright, and a production dependency audit with zero vulnerabilities.
+- Offline Playwright passed twice consecutively and left port 3000 free after each run.
+- Review found no committed secret values and no automatic mock fallback in live application paths.
+- The seed CLI launcher was corrected to preserve the `server-only` boundary while allowing the server-side seed script to execute.
+- Live migration, double seed, local live Playwright, and preview Playwright remain credential-dependent release verification steps.

@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "eslint .",
     "check:release-env": "tsx src/scripts/check-release-env.ts",
-    "seed:demo": "tsx src/data/seed-demo.ts",
+    "seed:demo": "node --conditions=react-server --import tsx src/data/seed-demo.ts",
     "seed:release": "npm run check:release-env && npm run seed:demo && npm run seed:demo",
     "test": "vitest run",
     "test:watch": "vitest",
