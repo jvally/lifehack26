@@ -3,22 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ListingEvaluation } from "@/domain/evaluation";
-import type { ProductPassport } from "@/domain/passport";
+import type { FeatureScalar, ProductPassport } from "@/domain/passport";
 import { ClientApiError, readApiData } from "@/lib/client-api";
-import { buildVisibilityReport } from "@/features/visibility/build-visibility-report";
 import { evaluateListing } from "@/features/evaluation/evaluate-listing";
-import type { AttributionEvent } from "@/domain/attribution";
-import { AttributionPanel } from "./attribution-panel";
-import { BeforeAfterPanel } from "./before-after-panel";
 import { GapList } from "./gap-list";
-import { ImplementationPatch } from "./implementation-patch";
 import { MarketInsights } from "./market-insights";
 import { makeMockDashboard } from "./mock-dashboard-data";
 import { ProductPassportPanel } from "./product-passport-panel";
 import { ReadinessBreakdown } from "./readiness-breakdown";
 import { SellerCoach } from "./seller-coach";
-import { VisibilityTracker } from "./visibility-tracker";
-import { getMockBrandProduct } from "@/lib/mock-brand-database";
+import { approveMockBrandProduct, getMockBrandProduct } from "@/lib/mock-brand-database";
+import { applySellerAnswer } from "@/features/interviews/answer-application";
 
 type DashboardData = ReturnType<typeof makeMockDashboard>;
 type ReleaseState = "loading" | "ready" | "offline" | "error";
@@ -68,11 +63,61 @@ export function ProductDashboard({
   );
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [attribution, setAttribution] = useState<AttributionEvent | null>(null);
-  const [approved, setApproved] = useState(() =>
-    offlineDemo ? getInitialOfflineDashboard(productId).approved : false,
-  );
   const [changedFeatureKeys, setChangedFeatureKeys] = useState<string[]>([]);
+
+  const saveFeature = async (featureKey: string, value: FeatureScalar) => {
+    if (!dashboard) throw new Error("The product is still loading.");
+    const definition = dashboard.intelligence.features.find(
+      (feature) => feature.key === featureKey,
+    );
+    if (!definition) throw new Error("Unknown product specification.");
+
+    if (offlineDemo) {
+      const passport = applySellerAnswer(
+        dashboard.passport,
+        {
+          featureKey,
+          label: definition.label,
+          value,
+          unit: definition.unit,
+          unknown: false,
+          evidenceId: null,
+        },
+        { supported: false },
+      );
+      const evaluation = evaluateListing(passport, dashboard.intelligence);
+      approveMockBrandProduct(productId, passport);
+      setDashboard((current) =>
+        current ? { ...current, passport, evaluation } : current,
+      );
+      setChangedFeatureKeys((current) => [...new Set([...current, featureKey])]);
+      return;
+    }
+
+    const response = await fetch(`/api/products/${productId}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        featureKey,
+        label: definition.label,
+        value,
+        unit: definition.unit,
+      }),
+    });
+    const update = await readApiData<{
+      passport?: ProductPassport;
+      evaluation?: ListingEvaluation;
+    }>(response, "We could not save this specification.");
+    if (!update.passport || !update.evaluation) {
+      throw new ClientApiError("The saved product record was incomplete.");
+    }
+    setDashboard((current) =>
+      current
+        ? { ...current, passport: update.passport!, evaluation: update.evaluation! }
+        : current,
+    );
+    setChangedFeatureKeys((current) => [...new Set([...current, featureKey])]);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -201,64 +246,47 @@ export function ProductDashboard({
         </p>
       )}
       <div className="grid gap-5 lg:grid-cols-5">
-        <div className="order-1 lg:col-span-4">
+        <div className="order-1 lg:col-span-5">
           <ProductPassportPanel
             passport={dashboard.passport}
             definitions={dashboard.intelligence.features}
             changedFeatureKeys={changedFeatureKeys}
+            onSaveFeature={saveFeature}
           />
         </div>
-        <aside className="order-2 space-y-5 lg:col-span-1">
+        <aside className="order-2 lg:col-span-2">
           <ReadinessBreakdown
             readiness={dashboard.evaluation.readiness}
             competitiveness={dashboard.evaluation.competitiveness}
           />
         </aside>
-        <div className="order-3 space-y-5 lg:col-span-2">
-          <GapList gaps={dashboard.evaluation.gaps} />
-        </div>
-        <div className="order-4 space-y-5 lg:col-span-3">
+        <div className="order-3 lg:col-span-3">
           <MarketInsights intelligence={dashboard.intelligence} />
         </div>
       </div>
       <div className="mt-5">
-        <SellerCoach
-          productId={productId}
-          passport={dashboard.passport}
-          evaluation={dashboard.evaluation}
-          intelligence={dashboard.intelligence}
-          offlineDemo={releaseState === "offline"}
-          onApproved={(update) => {
-            setDashboard((current) =>
-              current
-                ? {
-                    ...current,
-                    passport: update.passport,
-                    evaluation: update.evaluation,
-                  }
-                : current,
-            );
-            setChangedFeatureKeys(update.changedFeatureKeys);
-            setApproved(true);
-          }}
-        />
-      </div>
-      <div className="mt-5">
-        <VisibilityTracker fallback={buildVisibilityReport(dashboard.evaluation, dashboard.intelligence, [])} />
-      </div>
-      <div className="mt-5">
-        <ImplementationPatch productId={productId} offlineDemo={releaseState === "offline"} />
-      </div>
-      <div className="mt-5">
-        <BeforeAfterPanel
-          productId={productId}
-          offlineDemo={releaseState === "offline"}
-          approved={approved}
-          onCompared={setAttribution}
-        />
-      </div>
-      <div className="mt-5">
-        <AttributionPanel productId={productId} attribution={attribution} />
+        <section aria-labelledby="highest-impact-heading" className="space-y-5">
+          <div>
+            <p className="eyebrow">Highest-impact actions</p>
+            <h2 id="highest-impact-heading" className="mt-2 text-2xl font-semibold tracking-tight">Highest-impact actions</h2>
+          </div>
+          <GapList gaps={dashboard.evaluation.gaps} />
+          <SellerCoach
+            productId={productId}
+            passport={dashboard.passport}
+            evaluation={dashboard.evaluation}
+            intelligence={dashboard.intelligence}
+            offlineDemo={releaseState === "offline"}
+            onApproved={(update) => {
+              setDashboard((current) =>
+                current
+                  ? { ...current, passport: update.passport, evaluation: update.evaluation }
+                  : current,
+              );
+              setChangedFeatureKeys(update.changedFeatureKeys);
+            }}
+          />
+        </section>
       </div>
     </main>
   );
