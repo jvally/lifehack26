@@ -109,9 +109,6 @@ export function ProductPassportPanel({
             {passport.description}
           </p>
         </div>
-        <span className="mono-label shrink-0 rounded-lg border border-[var(--ink)] px-3 py-2 font-semibold">
-          {passport.currency} {passport.price}
-        </span>
       </div>
       <div className="mt-7 grid items-start gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {definitions.map((definition) => {
