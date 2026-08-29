@@ -8,6 +8,8 @@ import {
   type EmbeddingService,
 } from "@/services/embeddings";
 import type { RawProductInput } from "@/services/repositories/contracts";
+import { loadCategoryFeatureDefinitions } from "@/data/category-definitions";
+import { preserveExplicitListingFacts } from "./explicit-listing-facts";
 
 export type ExtractableProduct = Omit<RawProductInput, "externalId"> & {
   id: string;
@@ -59,7 +61,7 @@ export async function extractProductPassport(
       : { sourceType: product.sourceType }),
   };
   const draft = await dependencies.ai.extractProduct(aiInput);
-  const passport = ProductPassportSchema.parse({
+  const passport = preserveExplicitListingFacts(ProductPassportSchema.parse({
     ...draft,
     productId: product.id,
     name: product.name,
@@ -67,7 +69,7 @@ export async function extractProductPassport(
     price: product.price ?? draft.price,
     currency: product.currency ?? draft.currency,
     updatedAt: now.toISOString(),
-  });
+  }), loadCategoryFeatureDefinitions(product.category), product.rawListing);
   const [embedding] = await dependencies.embeddings.embed([
     passportToSearchText(passport),
   ]);

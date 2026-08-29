@@ -35,8 +35,8 @@ function getInitialOfflineDashboard(productId: string): {
   dashboard: DashboardData;
   approved: boolean;
 } {
-  const initial = makeMockDashboard(productId);
   const storedProduct = getMockBrandProduct(productId);
+  const initial = makeMockDashboard(productId, storedProduct?.sourceListing);
   if (storedProduct?.passport) {
     return {
       dashboard: {
@@ -48,24 +48,6 @@ function getInitialOfflineDashboard(productId: string): {
         ),
       },
       approved: storedProduct.status === "approved",
-    };
-  }
-  if (storedProduct?.sourceListing) {
-    const listingLines = storedProduct.sourceListing
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    return {
-      dashboard: {
-        ...initial,
-        passport: {
-          ...initial.passport,
-          name: listingLines[0] ?? initial.passport.name,
-          description:
-            listingLines.slice(1).join(" ") || initial.passport.description,
-        },
-      },
-      approved: false,
     };
   }
   return { dashboard: initial, approved: false };

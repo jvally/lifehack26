@@ -84,6 +84,20 @@
     "synonyms": ["neutral", "stability", "motion control", "pronation"]
   },
   {
+    "key": "durability",
+    "label": "Durability",
+    "dataType": "string",
+    "unit": null,
+    "required": false,
+    "demandWeight": 0.6,
+    "constraintImportance": 0.6,
+    "competitiveCoverage": 0.7,
+    "competitiveDirection": "neutral",
+    "answerability": 0.9,
+    "evidenceRequired": false,
+    "synonyms": ["durability", "durable", "abrasion resistant", "reinforced outsole"]
+  },
+  {
     "key": "upper_material",
     "label": "Upper material",
     "dataType": "string",

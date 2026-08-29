@@ -107,4 +107,47 @@ describe("extractProductPassport", () => {
       { ai, embeddings: new FakeEmbeddingService(), products },
     );
   });
+
+  it("preserves explicit seller facts when the AI draft omits them", async () => {
+    const products: ProductExtractionRepository = {
+      async savePassport() {},
+      async saveEmbedding() {},
+    };
+    const ai = new FakeAiGateway({
+      async extractProduct() {
+        return {
+          name: "CloudRun Pro",
+          category: "running_shoes",
+          description: "Road shoe",
+          price: 179,
+          currency: "SGD",
+          features: [],
+          useCases: [],
+          suitableContexts: [],
+          limitations: [],
+        };
+      },
+      async parseQuery() { throw new Error("unused"); },
+      async verifyEvidence() { throw new Error("unused"); },
+    });
+
+    const passport = await extractProductPassport(
+      {
+        id: "product-cloudrun",
+        name: "CloudRun Pro",
+        category: "running_shoes",
+        rawListing: "Stability type: Neutral support.\nDurability: Reinforced rubber outsole.",
+        price: 179,
+        currency: "SGD",
+        sourceType: "text",
+      },
+      { ai, embeddings: new FakeEmbeddingService(), products },
+    );
+
+    expect(passport.features).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: "stability", value: "Neutral support" }),
+      ]),
+    );
+  });
 });

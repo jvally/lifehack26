@@ -55,7 +55,7 @@ describe("ProductDashboard", () => {
 
     await userEvent.type(weightInput, "220");
     expect(weightInput).toHaveValue("220");
-    expect(within(passport).getAllByRole("button", { name: "Save" })).toHaveLength(5);
+    expect(within(passport).getAllByRole("button", { name: "Save" })).toHaveLength(7);
     await userEvent.click(within(passport).getAllByRole("button", { name: "Save" })[0]);
     expect(within(passport).getByRole("button", { name: "Saving…" })).toBeDisabled();
     expect(

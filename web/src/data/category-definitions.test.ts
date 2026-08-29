@@ -5,7 +5,7 @@ describe("loadCategoryFeatureDefinitions", () => {
   it("loads definitions for a supported category", () => {
     const definitions = loadCategoryFeatureDefinitions("running_shoes");
 
-    expect(definitions).toHaveLength(12);
+    expect(definitions).toHaveLength(13);
     expect(definitions.every((definition) => definition.key.length > 0)).toBe(
       true,
     );

@@ -3,6 +3,7 @@ import type { CategoryIntelligence, FeatureDefinition } from "@/domain/market";
 import type { ProductPassport } from "@/domain/passport";
 import type { RecommendationResult } from "@/domain/recommendation";
 import { evaluateListing } from "@/features/evaluation/evaluate-listing";
+import { preserveExplicitListingFacts } from "@/features/extraction/explicit-listing-facts";
 
 export type DashboardData = {
   passport: ProductPassport;
@@ -17,19 +18,29 @@ export const runningShoeFeatures: FeatureDefinition[] = [
   { key: "breathability", label: "Breathability", dataType: "string", unit: null, required: false, demandWeight: 0.8, constraintImportance: 0.7, competitiveCoverage: 0.7, competitiveDirection: "neutral", answerability: 0.9, evidenceRequired: true, synonyms: ["ventilated", "airflow"] },
   { key: "weather_suitability", label: "Weather suitability", dataType: "string", unit: null, required: false, demandWeight: 0.7, constraintImportance: 0.7, competitiveCoverage: 0.65, competitiveDirection: "neutral", answerability: 0.9, evidenceRequired: false, synonyms: ["humid", "rain"] },
   { key: "distance_suitability", label: "Distance suitability", dataType: "string", unit: null, required: false, demandWeight: 0.75, constraintImportance: 0.7, competitiveCoverage: 0.7, competitiveDirection: "neutral", answerability: 0.9, evidenceRequired: false, synonyms: ["half marathon", "long run"] },
+  { key: "stability", label: "Stability type", dataType: "string", unit: null, required: false, demandWeight: 0.8, constraintImportance: 0.9, competitiveCoverage: 0.7, competitiveDirection: "neutral", answerability: 0.9, evidenceRequired: true, synonyms: ["stability", "neutral", "motion control"] },
+  { key: "durability", label: "Durability", dataType: "string", unit: null, required: false, demandWeight: 0.6, constraintImportance: 0.6, competitiveCoverage: 0.7, competitiveDirection: "neutral", answerability: 0.9, evidenceRequired: false, synonyms: ["durability", "durable", "abrasion resistant"] },
 ];
 
-export function makeMockDashboard(productId: string): DashboardData {
-  const passport: ProductPassport = {
+export function makeMockDashboard(productId: string, sourceListing?: string): DashboardData {
+  const listingLines = sourceListing
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean) ?? [];
+  const priceMatch = sourceListing?.match(/(?:S\$|SGD\s*)(\d+(?:\.\d{1,2})?)/i);
+  const basePassport: ProductPassport = {
       productId,
-      name: "CloudRun Pro",
+      name: listingLines[0] ?? "CloudRun Pro",
       category: "running_shoes",
-      description: "A lightweight and comfortable running shoe suitable for all runners. Made with premium materials.",
-      price: 179,
-      currency: "SGD",
+      description: listingLines.slice(1).join(" ") || "A lightweight and comfortable running shoe suitable for all runners. Made with premium materials.",
+      price: priceMatch ? Number(priceMatch[1]) : 179,
+      currency: priceMatch ? "SGD" : "SGD",
       features: runningShoeFeatures.map((feature) => ({ key: feature.key, label: feature.label, value: null, unit: feature.unit, status: "missing", confidence: 0, evidenceIds: [] })),
       useCases: ["Everyday running"], suitableContexts: [], limitations: [], updatedAt: "2026-08-29T00:00:00.000Z",
     };
+  const passport = sourceListing
+    ? preserveExplicitListingFacts(basePassport, runningShoeFeatures, sourceListing)
+    : basePassport;
   const intelligence: CategoryIntelligence = {
       category: "running_shoes", features: runningShoeFeatures,
       intents: [{ id: "humid-half-marathon", label: "Humid-weather half-marathon training", weight: 38, requiredFeatures: ["weight", "terrain"], preferredFeatures: ["breathability", "weather_suitability", "distance_suitability"] }],

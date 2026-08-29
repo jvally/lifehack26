@@ -122,7 +122,7 @@ export class OpenAIAiGateway implements AiGateway {
           {
             role: "system",
             content:
-              "Extract only facts explicitly supported by the seller listing. Automatically classify the product into one of running_shoes, clothing, furniture, accessories, makeup, groceries, or sports_equipment. Use ai_inferred for extracted facts. Represent absent values as null with missing status. Never copy competitor observations into this seller's claims.",
+              "Extract only facts explicitly supported by the seller listing. Automatically classify the product into one of running_shoes, clothing, furniture, accessories, makeup, groceries, or sports_equipment. Return every stated product fact as a feature, including explicitly labelled specifications such as stability, durability, material, terrain, and measured weight. Use ai_inferred for extracted facts. Represent absent values as null with missing status. Never copy competitor observations into this seller's claims.",
           },
           { role: "user", content: JSON.stringify(product) },
         ],
