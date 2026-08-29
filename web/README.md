@@ -1,14 +1,186 @@
 # RET-AI-L Ready
 
-RET-AI-L Ready turns an incomplete seller listing into an evidence-aware Product Passport, identifies what limits AI shopping recommendations, and guides the seller through the highest-impact answers. It supports running shoes, clothing, furniture, accessories, makeup, groceries, and sports equipment, with automatic category detection for listings and shopper prompts.
+RET-AI-L Ready helps brands make product data understandable, trustworthy, and measurable in AI-mediated commerce. It turns incomplete listings into evidence-aware Product Passports, identifies the facts that stop an AI shopper from recommending a product, and guides the seller through the highest-impact improvements.
+
+The demo uses running shoes because constraints such as weight, terrain, weather, and price make the recommendation journey easy to understand. The product model is reusable across clothing, furniture, accessories, makeup, groceries, and sports equipment.
+
+## Business value
+
+Brands often have product information written for human browsing, rather than the explicit, reliable facts AI agents need to compare products. RET-AI-L Ready provides four connected capabilities:
+
+- **Agent-readiness optimisation:** finds missing, weakly supported, or inconsistent product facts and prioritises the next seller question by expected recommendation impact.
+- **AI visibility tracking:** measures which demand-weighted shopper intents a product can currently satisfy and highlights missed opportunities.
+- **Preference matching:** evaluates the same product against shopper priorities such as performance, value, or sustainability.
+- **Agent attribution:** creates a referral token for each recommendation and can record subsequent product-view or conversion events from an integrated storefront.
+
+The outcome is a measurable loop: improve product truth, validate that more AI-shopping intents can be served, then connect that improvement to downstream engagement.
+
+## End-to-end workflow
+
+```text
+Listing / CSV / JSON / catalog record
+                |
+                v
+      Category detection and import
+                |
+                v
+  LLM-assisted Product Passport extraction
+                |
+                +------------------------+
+                |                        |
+                v                        v
+  Market-context retrieval        Evidence/provenance model
+                |                        |
+                +-----------+------------+
+                            v
+         Deterministic readiness evaluation
+                            |
+                            v
+       Prioritised seller interview and update
+                            |
+                            v
+  Before/after recommendation + visibility + attribution
+                            |
+                            v
+     Approved implementation patch for the brand's systems
+```
+
+1. A brand imports a listing as text, JSON, or CSV.
+2. The system detects the category and extracts a structured Product Passport.
+3. Every extracted fact carries a provenance state: `verified`, `seller_declared`, `ai_inferred`, or `missing`.
+4. Category requirements, anonymised query signals, and permitted competitive observations generate readiness and competitiveness diagnostics.
+5. The Seller Coach asks one high-impact question at a time. Answers update the Product Passport and scores.
+6. The same shopper query is rerun against the original and improved Passport to prove the difference in eligibility, rank, and matched evidence.
+7. A benchmark visibility report summarises the demand-weighted intents the product can serve.
+8. The brand can export a machine-readable implementation patch instead of giving the app direct write access to its catalog.
 
 ## Architecture
 
-Listing import → automatic category detection → Product Passport extraction → market context and deterministic evaluation → seller interview → before and after recommendation simulation. The dashboard also tracks benchmark AI visibility, matches shopper preference profiles, and creates referral-token attribution events. It exposes a weighted AI-recommendability matrix covering product facts, shopper intent, evidence, search language, and consistency.
+The application is a Next.js frontend and API layer with explicit domain modules. Supabase/PostgreSQL stores product records, Product Passports, evidence, market signals, evaluation history, interview sessions, and attribution events. OpenAI is used for structured extraction, buyer-intent parsing, evidence review, and embeddings.
 
-The Next.js interface is separate from the deterministic domain engine. Product claims use one provenance state: `verified`, `seller_declared`, `ai_inferred`, or `missing`. Permitted competitor observations inform benchmarks only. They never become seller claims.
+```text
+                         +------------------------+
+                         |      Next.js UI         |
+                         | import / coach / proof  |
+                         +-----------+------------+
+                                     |
+                         +-----------v------------+
+                         |     Route handlers      |
+                         +-----------+------------+
+                                     |
+       +-----------------------------+-----------------------------+
+       |                             |                             |
+ +-----v------+               +------v-------+              +------v-------+
+ | Extraction |               | Evaluation   |              | Recommendation|
+ | + evidence |               | + interview  |              | + visibility   |
+ +-----+------+               +------+-------+              +------+--------+
+       |                             |                             |
+       +-----------------------------+-----------------------------+
+                                     |
+                         +-----------v------------+
+                         | Supabase + pgvector     |
+                         | products / signals /    |
+                         | evidence / events       |
+                         +------------------------+
+```
 
-## Install
+### Core domain boundaries
+
+- **Catalog adapters** normalise raw text, JSON, CSV, or future commerce-platform data into a shared input contract.
+- **Product extraction** creates a schema-validated Passport; it does not treat model output as verified truth.
+- **Market intelligence** retrieves category-specific query and permitted competitor signals.
+- **Evaluation** is deterministic and returns explainable scores and gaps.
+- **Interview orchestration** chooses the next unanswered, high-impact gap and persists accepted seller answers.
+- **Recommendation** applies hard constraints before ranking eligible candidates on semantic relevance, preference coverage, and evidence quality.
+- **Attribution** records recommendation-served, product-view, and conversion events with a referral token. It is an integration-ready event trail, not a claim that external agents expose conversion data by default.
+
+## Category generalisation
+
+RET-AI-L Ready uses a shared core Passport—name, description, price, evidence, provenance, use cases, contexts, and limitations—plus category-specific feature definitions.
+
+```text
+Shared Product Passport
+          +
+Category definition: features, types, units, synonyms,
+evidence rules, demand weights, and constraint importance
+          =
+Recommendation-ready category model
+```
+
+Current category definitions cover:
+
+| Category | Example features |
+| --- | --- |
+| Running shoes | Weight, terrain, breathability, distance suitability |
+| Clothing | Material, fit, size range, care |
+| Furniture | Dimensions, material, assembly, delivery |
+| Accessories | Material, compatibility, durability, warranty |
+| Makeup | Shade, skin type, ingredients, finish |
+| Groceries | Ingredients, allergens, dietary tags, storage |
+| Sports equipment | Equipment type, size, weight, skill level |
+
+Today these definitions are versioned in application code. To onboard a new category, add its feature schema, synonyms, evidence requirements, query benchmarks, and competitor observations. The next product step is a configurable category-pack editor and field-mapping interface so a brand can do this without engineering support.
+
+## Integration model
+
+The system complements a PIM, ERP, storefront, or marketplace feed; it does not replace it.
+
+```text
+PIM / Shopify / ERP / CSV feed
+              |
+              v
+        RET-AI-L Ready
+  audit -> enrich -> approve -> measure
+              |
+              v
+ Implementation patch or approved API sync
+              |
+              v
+ PIM / storefront / marketplace catalogue
+```
+
+The current implementation imports text, JSON, and CSV, then exports an adapter-neutral implementation patch containing changed fields, evidence IDs, and reasons. This makes review explicit and avoids silent catalog changes.
+
+Planned production connectors include Shopify OAuth and Admin GraphQL sync, generic REST/webhook adapters, brand-specific field mapping, and post-sync re-evaluation. A production deployment should require explicit approval before every external write and retain an audit trail.
+
+## System-design choices and trade-offs
+
+| Choice | Why | Trade-off |
+| --- | --- | --- |
+| Structured LLM extraction, deterministic scoring | Flexible input handling without opaque scores | Extraction needs seller review; the model never verifies facts on its own |
+| Provenance for every fact | Makes agent recommendations explainable and safer | Requires sellers to supply evidence for the strongest status |
+| Hybrid retrieval: full-text + embeddings | Preserves exact constraints while handling natural language | Requires embeddings and maintained market signals |
+| Hard filters before ranking | A product that cannot prove a non-negotiable constraint is not recommended | Can reduce recall when listings are incomplete, intentionally surfacing the data gap |
+| Category definitions over one universal schema | Keeps recommendations meaningful in very different product categories | Definitions are code-managed today; no-code configuration is a roadmap item |
+| Implementation patch before direct sync | Keeps brands in control and is easy to integrate with many systems | Does not yet provide one-click Shopify/PIM publishing |
+| Referral-token attribution | Provides an honest integration point for agent-influenced engagement | It records only events sent by a connected channel; it cannot infer third-party AI conversions |
+| Offline demo mode | Makes the hackathon story repeatable without secrets | It uses clearly labelled sample data and does not persist live changes |
+
+## What is implemented now
+
+- Listing import from text, JSON, and CSV.
+- Automatic detection across the supported categories.
+- Evidence-aware Product Passport extraction.
+- Market-aware AI Readiness and Competitiveness scoring.
+- High-impact seller interview and live re-evaluation.
+- Before/after recommendation simulation.
+- Shopper preference profiles: balanced, performance, value, and sustainability.
+- Demand-weighted visibility reporting.
+- Referral-token attribution events and API endpoints.
+- Machine-readable implementation-patch export.
+
+## Demo flow
+
+1. Open **Analyse a listing** and paste the incomplete CloudRun Pro listing.
+2. Show the initial readiness score, visibility metrics, and high-priority evidence gaps.
+3. Open the Seller Coach and add measured weight with supporting evidence.
+4. Add road-terrain and humid-weather suitability.
+5. Run the half-marathon shopper query using a preference profile.
+6. Compare before and after eligibility, rank, matched facts, and evidence.
+7. Show the referral token/product-view attribution event.
+8. Download the implementation patch for the brand's catalog owner.
+
+## Install and run
 
 Use Node.js 24. From this directory:
 
@@ -16,32 +188,24 @@ Use Node.js 24. From this directory:
 npm ci
 ```
 
-## Offline development
+### Offline development
 
-Offline mode is deliberate and visible. It uses local dashboard and simulation data after the import screen.
+Offline mode is deliberate and visibly labelled. It uses local sample data after import and does not persist live API changes.
 
 ```powershell
 $env:NEXT_PUBLIC_OFFLINE_DEMO = "true"
 npm run dev
 ```
 
-Run the secret-free browser journey with:
+Run the browser journey with:
 
 ```powershell
 npm run e2e:offline
 ```
 
-The browser runner builds the application, starts a production server, runs Playwright, and terminates only the server process it created.
+### Live local development
 
-## Live local development
-
-Copy `.env.example` to `.env.local`, replace every placeholder, and keep:
-
-```text
-NEXT_PUBLIC_OFFLINE_DEMO=false
-```
-
-The required server values are:
+Copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_OFFLINE_DEMO=false`, and provide:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL=
@@ -52,37 +216,17 @@ OPENAI_QUERY_MODEL=
 OPENAI_EMBEDDING_MODEL=
 ```
 
-Validate the environment without printing secret values:
+Then validate and seed the intended Supabase project:
 
 ```powershell
 npm run check:release-env
-```
-
-Apply and validate the Supabase migrations for the intended project:
-
-```powershell
 npx supabase db push
 npx supabase db lint
-```
-
-Seed twice to verify idempotency, then start live development:
-
-```powershell
 npm run seed:release
 npm run dev
 ```
 
-Run the real API journey locally with:
-
-```powershell
-npm run e2e:live
-```
-
-The live journey does not intercept application API routes. It verifies import, extraction, evaluation, interview progression, simulation, persistence, and Product Passport export.
-
 ## Verification
-
-Secret-free checks:
 
 ```powershell
 npm test
@@ -90,46 +234,6 @@ npm run typecheck
 npm run lint
 npm run build
 npm run e2e:offline
-npm audit --omit=dev --audit-level=high
 ```
 
-For a deployed preview, set the same six release variables in the hosting environment and ensure offline mode is false. Then run:
-
-```powershell
-$env:PLAYWRIGHT_BASE_URL = "https://your-preview.example"
-npm run e2e:live
-```
-
-Code-complete means the secret-free checks pass. Release-verified additionally requires migrations, the double seed, the local live journey, and the deployed preview journey to pass with real credentials.
-
-## Three-minute demo
-
-1. Open **Analyse a listing** and paste the weak CloudRun Pro listing.
-2. Show the initial AI Readiness score and high-priority evidence gaps.
-3. Open the Seller Coach and confirm measured weight with supporting evidence.
-4. Confirm road terrain and humid-weather suitability.
-5. Point out the updated Product Passport and provenance badges.
-6. Run the saved Singapore half-marathon shopper query.
-7. Compare Before and After eligibility, rank, matched facts, and evidence.
-8. Export the Product Passport from the integrated product endpoint.
-
-## Deployment boundary
-
-Deploy with `web` as the application root. Keep the Supabase service role key and OpenAI key server-side. This Phase 1 build is suitable for a controlled demonstration. It is not ready for public multi-user production until Phase 2 adds authentication, product ownership, user-scoped row-level security, and rate limiting.
-
-## Retrieval and scoring design decisions
-
-- **Structured intent plus embeddings:** shopper text is parsed into a typed intent with the OpenAI Responses API, while `text-embedding-3-small` creates a 1,536-dimensional vector for semantic matching. We do not depend on a heavyweight NLP keyword package; deterministic ranking handles hard constraints after retrieval.
-- **Hybrid market RAG:** market signals use Supabase/PostgreSQL full-text search (`tsvector`/`websearch_to_tsquery`) and Supabase `pgvector` similarity, fused with reciprocal rank. This keeps exact terms such as `oily skin`, `vegan`, or `under S$50` useful while still handling semantic phrasing.
-- **Vector product retrieval:** products are filtered by detected category and searched with an HNSW vector index. The product match function returns the complete product row in one database round trip, avoiding a second detail query.
-- **Latency controls:** intent parsing and embedding generation run concurrently. A five-minute in-process cache reuses identical query artifacts during warm server instances; failed requests are removed from the cache.
-- **Deterministic recommendation scoring:** after retrieval, hard constraints, preference coverage, evidence quality, and semantic similarity are scored locally. The seller-facing matrix weights product facts (30%), shopper intent (25%), evidence (20%), search language (15%), and consistency (10%).
-
-## Brand implementation pathway
-
-Seller-coach answers update the current Product Passport while preserving the original passport for comparison. The product workspace exposes an **Implementation patch** download after improvements are saved. The patch is a versioned JSON change set containing each field path, current value, proposed value, supporting evidence IDs, and reason for the recommendation. This is intentionally an adapter-neutral boundary: a brand can import it into a PIM, Shopify/commerce connector, ERP, or custom database without sharing database credentials. A future connector can consume the same patch after an explicit approval step and then re-run evaluation to show the measurable readiness lift.
-
-## Deferred TODOs
-
-- **Shopify integration:** add OAuth store connection, product import, approved implementation-patch sync through Shopify Admin GraphQL, and post-sync re-evaluation. Use scoped permissions and preserve an audit trail of every applied change.
-- Add a generic REST/webhook adapter for brands using a custom PIM or database.
+Deploy with `web` as the application root. Keep the Supabase service-role key and OpenAI key server-side. This build is appropriate for a controlled demonstration; production rollout still needs authentication, product ownership, user-scoped row-level security, rate limiting, consent/privacy review, and approved catalog connectors.
