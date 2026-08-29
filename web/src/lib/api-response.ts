@@ -74,6 +74,69 @@ function isAiProviderUnavailable(error: unknown): boolean {
   return candidate.status === 429 || candidate.code === "insufficient_quota" || candidate.type === "insufficient_quota";
 }
 
+function apiErrorStatus(error: unknown): number | null {
+  if (typeof error !== "object" || error === null || !("status" in error)) {
+    return null;
+  }
+  return typeof error.status === "number" ? error.status : null;
+}
+
+function aiProviderFailure(error: unknown): {
+  code: string;
+  message: string;
+  status: number;
+} | null {
+  const status = apiErrorStatus(error);
+  if (status === 401) {
+    return {
+      code: "AI_PROVIDER_AUTHENTICATION_FAILED",
+      message: "OpenAI rejected the configured API key. Update OPENAI_API_KEY in the production environment.",
+      status: 503,
+    };
+  }
+  if (status === 403) {
+    return {
+      code: "AI_PROVIDER_ACCESS_DENIED",
+      message: "The configured OpenAI project does not have access to the selected model. Check the API key project and model settings.",
+      status: 503,
+    };
+  }
+  if (status === 404) {
+    return {
+      code: "AI_PROVIDER_MODEL_UNAVAILABLE",
+      message: "The configured OpenAI model is unavailable. Check OPENAI_EXTRACTION_MODEL and OPENAI_EMBEDDING_MODEL.",
+      status: 503,
+    };
+  }
+  if (status === 429 || isAiProviderUnavailable(error)) {
+    return {
+      code: "AI_PROVIDER_UNAVAILABLE",
+      message: "The AI provider is unavailable. Check the OpenAI account credits and billing settings.",
+      status: 503,
+    };
+  }
+  if (status !== null && status >= 500) {
+    return {
+      code: "AI_PROVIDER_UNAVAILABLE",
+      message: "The AI provider is temporarily unavailable. Please try again shortly.",
+      status: 503,
+    };
+  }
+  return null;
+}
+
+function logUnexpectedError(error: unknown, requestId: string) {
+  const details = typeof error === "object" && error !== null
+    ? error as { name?: unknown; message?: unknown; code?: unknown; status?: unknown }
+    : {};
+  console.error("Unhandled API operation failure", {
+    requestId,
+    name: typeof details.name === "string" ? details.name : "UnknownError",
+    code: typeof details.code === "string" ? details.code : undefined,
+    status: typeof details.status === "number" ? details.status : undefined,
+  });
+}
+
 export async function withApiErrors(
   operation: () => Promise<Response>,
   requestId = crypto.randomUUID(),
@@ -107,11 +170,12 @@ export async function withApiErrors(
         requestId,
       );
     }
-    if (isAiProviderUnavailable(error)) {
+    const providerFailure = aiProviderFailure(error);
+    if (providerFailure !== null) {
       return apiFailure(
-        "AI_PROVIDER_UNAVAILABLE",
-        "The AI provider is unavailable. Check the OpenAI account credits and billing settings.",
-        503,
+        providerFailure.code,
+        providerFailure.message,
+        providerFailure.status,
         requestId,
       );
     }
@@ -133,6 +197,7 @@ export async function withApiErrors(
         requestId,
       );
     }
+    logUnexpectedError(error, requestId);
     return apiFailure(
       "INTERNAL_SERVER_ERROR",
       "The operation failed.",

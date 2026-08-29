@@ -68,4 +68,32 @@ describe("withApiErrors", () => {
       requestId: "request-unexpected",
     });
   });
+
+  it("explains how to fix an OpenAI authentication failure", async () => {
+    const response = await withApiErrors(async () => {
+      throw Object.assign(new Error("Incorrect API key provided"), { status: 401 });
+    }, "request-openai-auth");
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "AI_PROVIDER_AUTHENTICATION_FAILED",
+        message: expect.stringContaining("OPENAI_API_KEY"),
+      },
+    });
+  });
+
+  it("explains how to fix an unavailable OpenAI model", async () => {
+    const response = await withApiErrors(async () => {
+      throw Object.assign(new Error("Model not found"), { status: 404 });
+    }, "request-openai-model");
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "AI_PROVIDER_MODEL_UNAVAILABLE",
+        message: expect.stringContaining("OPENAI_EXTRACTION_MODEL"),
+      },
+    });
+  });
 });
