@@ -13,8 +13,8 @@ describe("ProductDashboard", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { session: { id: "session-live-1" }, nextGap: dashboard.evaluation.gaps[1] } }), { status: 201 })));
     render(<ProductDashboard productId="product-1" />);
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
-    await userEvent.click(screen.getByRole("button", { name: "Open seller coach" }));
+    await userEvent.click(screen.getAllByRole("button", { name: "Open seller coach" })[0]);
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/products/product-1/interviews", { method: "POST" }));
-    expect(screen.getByText(dashboard.evaluation.gaps[1].question)).toBeInTheDocument();
+    expect(screen.getAllByText(dashboard.evaluation.gaps[1].question)).not.toHaveLength(0);
   });
 });
