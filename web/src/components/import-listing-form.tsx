@@ -61,20 +61,20 @@ export function ImportListingForm({
   return (
     <form
       onSubmit={(event) => void submit(event)}
-      className="surface-card mx-auto max-w-3xl p-6 sm:p-8"
+      className="surface-card mx-auto max-w-4xl border-[var(--ink)] p-6 sm:p-10"
     >
-      <p className="text-xs font-bold uppercase tracking-widest text-blue-700">
+      <p className="eyebrow">
         Start with product truth
       </p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+      <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[var(--ink)] sm:text-6xl">
         Analyse a product listing
       </h1>
-      <p className="mt-3 max-w-2xl text-slate-600">
+      <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--muted)] sm:text-lg">
         Import the source listing. AgentReady Coach will identify the facts an
         AI shopper still cannot verify.
       </p>
       <div
-        className="mt-6 flex flex-wrap gap-2"
+        className="mt-8 flex flex-wrap gap-2"
         role="tablist"
         aria-label="Listing format"
       >
@@ -85,19 +85,19 @@ export function ImportListingForm({
             role="tab"
             aria-selected={format === item}
             onClick={() => setFormat(item)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${format === item ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"}`}
+            className={`min-h-11 rounded-full border px-5 py-2 text-sm font-semibold capitalize transition-colors duration-100 ${format === item ? "border-[var(--ink)] bg-[var(--ink)] text-white" : "border-[var(--border)] bg-transparent text-[var(--ink)] hover:border-[var(--ink)]"}`}
           >
             {item}
           </button>
         ))}
       </div>
-      <label className="mt-5 block text-sm font-semibold">
+      <label className="mt-8 block text-sm font-semibold text-[var(--ink)]">
         Product listing
         <textarea
           aria-label="Product listing"
           value={content}
           onChange={(event) => setContent(event.target.value)}
-          className="mt-2 min-h-56 w-full rounded-xl border border-slate-300 bg-white p-4 text-slate-900"
+          className="mt-3 min-h-64 w-full rounded-xl border border-[var(--ink)] bg-[var(--canvas)] p-5 text-[var(--ink)] shadow-none transition-shadow duration-200 placeholder:text-[var(--muted)] focus:shadow-[0_0_0_3px_rgb(20_20_19_/_12%)]"
           placeholder={
             format === "text"
               ? "CloudRun Pro\nA lightweight and comfortable running shoe..."
@@ -110,14 +110,14 @@ export function ImportListingForm({
       {error && (
         <div
           role="alert"
-          className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800"
+          className="mt-4 rounded-lg border border-[var(--missing)] bg-[#fff5f2] p-4 text-sm text-[var(--missing)]"
         >
           {error}
         </div>
       )}
       <button
         disabled={stage !== "idle"}
-        className="mt-5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 disabled:opacity-60"
+        className="button-primary mt-6 inline-flex min-h-12 items-center px-6 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
       >
         {stage === "importing"
           ? "Importing listing…"

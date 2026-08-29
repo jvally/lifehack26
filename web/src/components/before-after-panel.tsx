@@ -14,27 +14,30 @@ function Result({
 }) {
   const candidate = result.candidates[0];
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="mt-3 text-3xl font-bold text-slate-950">
+    <article className="rounded-xl border border-[var(--border)] bg-[var(--canvas)] p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <span className="mono-label text-[var(--muted)]">{title === "Before" ? "01" : "02"}</span>
+      </div>
+      <p className="mt-5 text-3xl font-bold tracking-tight text-[var(--ink)]">
         {candidate?.eligible ? "Eligible" : "Insufficient evidence"}
       </p>
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+      <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
         <div>
-          <dt className="text-slate-500">Rank</dt>
+          <dt className="text-[var(--muted)]">Rank</dt>
           <dd className="font-semibold">{candidate?.rank ?? "—"}</dd>
         </div>
         <div>
-          <dt className="text-slate-500">Fit score</dt>
+          <dt className="text-[var(--muted)]">Fit score</dt>
           <dd className="font-semibold">{candidate?.fitScore ?? "—"}</dd>
         </div>
       </dl>
       <p className="mt-4 text-sm font-semibold">Matched facts</p>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
         {candidate?.matchedFacts.join(", ") || "None"}
       </p>
       <p className="mt-4 text-sm font-semibold">Missing or failed</p>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
         {candidate
           ? [...candidate.failedConstraints, ...candidate.missingEvidence].join(
               ", ",
@@ -103,34 +106,34 @@ export function BeforeAfterPanel({
   };
 
   return (
-    <section className="surface-card p-5" aria-labelledby="proof-heading">
-      <p className="text-xs font-bold uppercase tracking-widest text-blue-700">
+    <section className="surface-card p-5 sm:p-6" aria-labelledby="proof-heading">
+      <p className="eyebrow">
         Recommendation proof
       </p>
-      <h2 id="proof-heading" className="mt-1 text-xl font-semibold">
+      <h2 id="proof-heading" className="mt-2 text-2xl font-semibold tracking-tight">
         Run the same shopper query
       </h2>
-      <label className="mt-4 block text-sm font-semibold">
+      <label className="mt-6 block text-sm font-semibold">
         Buyer query
         <textarea
           aria-label="Buyer query"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="mt-2 min-h-24 w-full rounded-lg border border-slate-300 p-3"
+          className="mt-3 min-h-24 w-full rounded-lg border border-[var(--ink)] bg-[var(--canvas)] p-4 text-[var(--ink)] placeholder:text-[var(--muted)]"
         />
       </label>
       <button
         type="button"
         onClick={() => void compare()}
         disabled={loading}
-        className="mt-3 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-60"
+        className="button-primary mt-4 min-h-11 px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? "Comparing…" : "Compare recommendations"}
       </button>
       {error && (
         <p
           role="alert"
-          className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800"
+          className="mt-4 rounded-lg border border-[var(--missing)] bg-[#fff5f2] p-4 text-sm text-[var(--missing)]"
         >
           {error}
         </p>
