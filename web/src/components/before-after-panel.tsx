@@ -53,10 +53,12 @@ function Result({
 export function BeforeAfterPanel({
   productId,
   offlineDemo,
+  approved = true,
   onCompared,
 }: {
   productId: string;
   offlineDemo: boolean;
+  approved?: boolean;
   onCompared?: (attribution: AttributionEvent | null) => void;
 }) {
   const [query, setQuery] = useState(
@@ -79,7 +81,7 @@ export function BeforeAfterPanel({
       if (offlineDemo) {
         setResults({
           before: makeMockRecommendation(query, false),
-          after: makeMockRecommendation(query, true),
+          after: makeMockRecommendation(query, approved),
         });
         onCompared?.(null);
         return;

@@ -35,3 +35,27 @@ export async function POST(request: Request) {
     );
   });
 }
+
+export type PublicProduct = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  price: number | null;
+  currency: string | null;
+};
+
+export async function GET() {
+  return withApiErrors(async () => {
+    const products = await getApplicationDependencies().products.list();
+    const publicProducts: PublicProduct[] = products.map((p) => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      description: p.passport?.description || p.originalPassport?.description || "",
+      price: p.price,
+      currency: p.currency,
+    }));
+    return apiSuccess({ products: publicProducts });
+  });
+}

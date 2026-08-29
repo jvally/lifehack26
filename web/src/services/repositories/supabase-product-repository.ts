@@ -130,6 +130,18 @@ export class SupabaseProductRepository implements ProductRepository {
     return data === null ? null : mapProductRow(data);
   }
 
+  async list(limit = 100): Promise<ProductRecord[]> {
+    const { data, error } = await this.client
+      .from("products")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (error) {
+      throw new Error("PRODUCT_REPOSITORY_LIST_FAILED", { cause: error });
+    }
+    return z.array(ProductRowSchema).parse(data ?? []).map(mapProductRow);
+  }
+
   async listByCategory(category: string): Promise<ProductRecord[]> {
     const { data, error } = await this.client
       .from("products")

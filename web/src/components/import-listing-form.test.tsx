@@ -6,12 +6,28 @@ import { ImportListingForm } from "./import-listing-form";
 afterEach(cleanup);
 
 describe("ImportListingForm", () => {
+  it("creates a product in the local mock brand database in offline mode", async () => {
+    const onImported = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ImportListingForm onImported={onImported} offlineDemo />);
+
+    await userEvent.type(
+      screen.getByLabelText("Product listing"),
+      "CloudRun Pro\nA lightweight running shoe. Price: S$179.",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Analyse listing" }));
+
+    await waitFor(() => expect(onImported).toHaveBeenCalledOnce());
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("imports pasted listing text and starts extraction", async () => {
     const onImported = vi.fn();
     vi.stubGlobal("fetch", vi.fn()
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { productIds: ["product-1"] }, requestId: "request-1" }), { status: 201 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: {}, requestId: "request-2" }), { status: 200 })));
-    render(<ImportListingForm onImported={onImported} />);
+    render(<ImportListingForm onImported={onImported} offlineDemo={false} />);
     await userEvent.type(screen.getByLabelText("Product listing"), "CloudRun Pro lightweight shoe");
     await userEvent.click(screen.getByRole("button", { name: "Analyse listing" }));
     await waitFor(() => expect(fetch).toHaveBeenNthCalledWith(1, "/api/products", expect.objectContaining({ method: "POST" })));
@@ -33,7 +49,7 @@ describe("ImportListingForm", () => {
         ),
       ),
     );
-    render(<ImportListingForm onImported={vi.fn()} />);
+    render(<ImportListingForm onImported={vi.fn()} offlineDemo={false} />);
 
     await userEvent.type(
       screen.getByLabelText("Product listing"),

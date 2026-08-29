@@ -154,7 +154,7 @@ Planned production connectors include Shopify OAuth and Admin GraphQL sync, gene
 | Category definitions over one universal schema | Keeps recommendations meaningful in very different product categories | Definitions are code-managed today; no-code configuration is a roadmap item |
 | Implementation patch before direct sync | Keeps brands in control and is easy to integrate with many systems | Does not yet provide one-click Shopify/PIM publishing |
 | Referral-token attribution | Provides an honest integration point for agent-influenced engagement | It records only events sent by a connected channel; it cannot infer third-party AI conversions |
-| Offline demo mode | Makes the hackathon story repeatable without secrets | It uses clearly labelled sample data and does not persist live changes |
+| Offline demo mode | Makes the hackathon story repeatable without secrets | It uses clearly labelled sample data and browser-local mock persistence |
 
 ## What is implemented now
 
@@ -175,8 +175,10 @@ Planned production connectors include Shopify OAuth and Admin GraphQL sync, gene
 2. Show the initial readiness score, visibility metrics, and high-priority evidence gaps.
 3. Open the Seller Coach and add measured weight with supporting evidence.
 4. Add road-terrain and humid-weather suitability.
-5. Run the half-marathon shopper query using a preference profile.
-6. Compare before and after eligibility, rank, matched facts, and evidence.
+5. Review the proposed field-level changes, then choose **Approve and save**.
+6. Confirm that the mock brand database record and Product Passport update.
+7. Run the half-marathon shopper query using a preference profile.
+8. Compare before and after eligibility, rank, matched facts, and evidence.
 7. Show the referral token/product-view attribution event.
 8. Download the implementation patch for the brand's catalog owner.
 
@@ -191,6 +193,31 @@ npm ci
 ### Offline development
 
 Offline mode is deliberate and visibly labelled. It uses local sample data after import and does not persist live API changes.
+
+For the hackathon path, product creation and approved changes are persisted in
+browser `localStorage` under `retailready:mock-brand-database:v1`. This simulates
+a brand catalog without Shopify credentials. Draft coach answers are kept only in
+component state; the database changes only after explicit approval.
+
+The simulated database record is:
+
+```typescript
+type MockBrandProduct = {
+  id: string;
+  sourceFormat: "text" | "json" | "csv";
+  sourceListing: string;
+  passport: ProductPassport | null;
+  status: "draft" | "approved";
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+The key demo components are `ImportListingForm` (product creation),
+`ProductDashboard` (analysis and record display), `SellerCoach` (questions,
+proposal, and approval), `mock-brand-database.ts` (local persistence), and
+`BeforeAfterPanel` (buyer eligibility verification). The same UI uses the live
+Route Handler and Supabase repositories when offline mode is disabled.
 
 ```powershell
 $env:NEXT_PUBLIC_OFFLINE_DEMO = "true"

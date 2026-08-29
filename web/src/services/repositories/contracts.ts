@@ -43,6 +43,7 @@ export interface ProductRepository {
   create(input: RawProductInput): Promise<ProductRecord>;
   createMany(inputs: RawProductInput[]): Promise<ProductRecord[]>;
   get(productId: string): Promise<ProductRecord | null>;
+  list(limit?: number): Promise<ProductRecord[]>;
   listByCategory(category: string): Promise<ProductRecord[]>;
   savePassport(productId: string, passport: ProductPassport): Promise<void>;
   saveEmbedding(productId: string, embedding: number[]): Promise<void>;
