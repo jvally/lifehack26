@@ -35,6 +35,10 @@ button, input, textarea, select { font: inherit; }
   outline-offset: 2px;
 }
 
+.dark-surface :focus-visible {
+  outline-color: white;
+}
+
 .surface-card {
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -80,6 +84,10 @@ button, input, textarea, select { font: inherit; }
   letter-spacing: 0.14em;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.dark-surface .eyebrow {
+  color: rgb(255 255 255 / 65%);
 }
 
 .mono-label {
@@ -128,6 +136,17 @@ button, input, textarea, select { font: inherit; }
 .button-secondary:hover:not(:disabled) {
   background: var(--ink);
   color: white;
+}
+
+.dark-surface .button-secondary {
+  border-color: rgb(255 255 255 / 50%);
+  color: white;
+}
+
+.dark-surface .button-secondary:hover:not(:disabled) {
+  border-color: white;
+  background: white;
+  color: var(--ink);
 }
 
 .changed-feature { animation: feature-highlight 800ms cubic-bezier(0.16, 1, 0.3, 1); }
