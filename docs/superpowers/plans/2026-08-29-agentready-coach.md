@@ -28,6 +28,11 @@
 - Use permitted or supplied competitive observations and aggregated query data only.
 - Do not automatically publish or modify an external seller account.
 - Follow TDD for each domain behavior and route contract.
+- Use one branch per role and merge into `integration/hackathon` before `main`.
+- Treat `src/domain/**` and the interface map as a frozen contract after the foundation checkpoint.
+- Only Role 1 edits `package.json`, lockfiles, database migrations, and Route Handler files.
+- Only Role 3 edits shared domain contracts after the foundation checkpoint.
+- Add tests beside the module owned by the role that implements it.
 
 ---
 
@@ -4478,18 +4483,177 @@ git status --short
 
 Expected: all checks pass, the final commit succeeds, and git status is empty.
 
-## Implementation order and ownership
+## Foundation audit and parallel implementation
 
-For a four-person team:
+The current repository contains the source implementation for Tasks 1 and 2:
 
-| Engineer | Primary tasks |
-|---|---|
-| A | Tasks 1, 2, 10 |
-| B | Tasks 3, 7, 9 |
-| C | Tasks 4, 5, 6, 8 |
-| D | Tasks 11, 12 and pitch preparation |
+- Task 1 has the `web/` Next.js foundation, scripts for test, type-check, lint, build, and end-to-end testing, the landing page, and its component test.
+- Task 2 has the Product Passport, market, evaluation, and recommendation Zod contracts, inferred TypeScript types, validation tests, and reusable fixtures.
+- The source files pass repository whitespace checks and static contract checks.
+- Runtime verification remains a Gate 1 requirement. The environment used to create the foundation was Node `v25.3.0` instead of the required Node 24 LTS, npm registry access was unavailable, and `web/package-lock.json` could not be generated. Role 1 must install dependencies with Node 24 LTS and commit the generated lockfile before claiming Gate 1 complete.
 
-Tasks 1 and 2 must finish before parallel work begins. Task 4 must finish before Supabase-backed integration. Task 10 begins after Tasks 5 through 9 expose stable interfaces. Task 12 starts once the API and dashboard are integrated.
+### Phase 0: foundation checkpoint
+
+This is the only short sequential step. It prevents four branches from inventing incompatible interfaces.
+
+1. Role 1 owns the Next.js scaffold, `web/package.json`, tooling configuration, and dependency installation for Task 1.
+2. Role 3 owns the Task 2 schemas and fixtures. It publishes the interface map and example JSON payloads.
+3. All four engineers review the domain contracts and API payload shapes for 15 minutes.
+4. Merge both foundation commits into `integration/hackathon`.
+5. Role 1 runs `npm install`, commits `web/package-lock.json`, and records Node, npm, test, type-check, lint, and build output.
+
+Roles 2 and 4 may prepare mock AI responses and UI layouts while this checkpoint is running, but they must not modify shared contracts.
+
+### Role 1: platform, database, catalog, and API infrastructure
+
+Branch: `feat/platform-data`
+
+Owns Tasks 4 and 5, the Route Handler and dependency-container portion of Task 10, and the persistence portion of Task 12. It is also the owner of Task 1's package and tooling files.
+
+Files owned:
+
+```text
+web/package.json
+web/package-lock.json
+web/vitest.config.ts
+web/src/test/setup.ts
+web/next.config.ts
+web/eslint.config.mjs
+web/postcss.config.mjs
+web/tsconfig.json
+web/supabase/**
+web/src/lib/env.ts
+web/src/lib/supabase-admin.ts
+web/src/lib/api-response.ts
+web/src/services/repositories/**
+web/src/services/container.ts
+web/src/features/catalog/**
+web/src/app/api/**
+web/src/data/seed-demo.ts
+web/.env.example
+```
+
+Deliverables:
+
+- Supabase migrations and RLS policies.
+- `ProductRepository`, `MarketRepository`, and `SessionRepository` implementations plus in-memory fakes.
+- Text, JSON, and CSV catalog adapters.
+- Shared API success and error envelopes.
+- Route handlers that call Role 3 application services rather than implementing business rules.
+- An idempotent demo seed command.
+
+Role 1 must not change `src/domain/**` or place scoring logic in API routes. A schema or migration request from another role is made as a small interface change for Role 1 to apply.
+
+### Role 2: extraction, embeddings, RAG, and market intelligence
+
+Branch: `feat/ai-rag`
+
+Owns Task 6, Task 7, and the AI verification portion of Task 8.
+
+Files owned:
+
+```text
+web/src/lib/openai.ts
+web/src/services/embeddings.ts
+web/src/features/extraction/**
+web/src/features/market/**
+web/src/data/running-shoes-category.json
+web/src/data/demo-market-signals.json
+```
+
+Deliverables:
+
+- OpenAI Structured Outputs gateway with retry and schema validation.
+- Product Passport and QueryIntent extraction against the frozen Zod schemas.
+- Embedding service using `text-embedding-3-small` and 1536 dimensions.
+- Category ontology, market-signal import, and category-filtered hybrid retrieval.
+- Evidence-aware verification helpers that never turn competitor observations into seller claims.
+- Fake AI and retrieval implementations so Role 3 can test without network calls.
+
+Role 2 must not assign readiness or competitiveness scores. It supplies structured facts, retrieved context, citations, and confidence for Role 3's deterministic engine.
+
+### Role 3: domain engine, seller interview, and application services
+
+Branch: `feat/domain-engine`
+
+Owns Task 2, Task 3, Task 8's interview orchestration, Task 9, and the application-service portion of Task 10. It is the sole owner of shared domain contracts after Phase 0.
+
+Files owned:
+
+```text
+web/src/domain/**
+web/src/test/fixtures.ts
+web/src/features/evaluation/**
+web/src/features/interviews/**
+web/src/features/recommendation/**
+web/src/services/application-service.ts
+```
+
+Deliverables:
+
+- Deterministic AI Readiness and Competitiveness calculations.
+- Demand-weighted gap prioritisation and seller question generation.
+- Provenance transitions for seller answers, evidence, Unknown, and contradictions.
+- QueryIntent parsing, hard-constraint filtering, candidate ranking, and explanations.
+- Before-and-after simulation using the same query and scoring version.
+- Application services that compose Role 1 repositories and Role 2 AI interfaces.
+- Unit and service tests using in-memory fixtures.
+
+Role 3 must not call Supabase or OpenAI directly. The application service receives interfaces from the dependency container and keeps business rules independent of infrastructure.
+
+### Role 4: frontend, demo experience, and end-to-end QA
+
+Branch: `feat/frontend-demo`
+
+Owns Task 11 and the presentation, demo-data, and end-to-end portions of Task 12.
+
+Files owned:
+
+```text
+web/src/app/products/**
+web/src/components/**
+web/src/app/globals.css
+web/src/app/layout.tsx
+web/src/data/demo-products.json
+web/src/data/demo-queries.json
+web/e2e/**
+web/playwright.config.ts
+web/README.md
+```
+
+Deliverables:
+
+- Listing import screen.
+- Product Passport and provenance views.
+- Readiness, competitiveness, market-insight, and gap panels.
+- One-question seller coach with evidence input and Unknown handling.
+- Before-and-after recommendation comparison.
+- Playwright coverage for the three-minute demo.
+- Deterministic demo products and buyer queries.
+- Local setup, demo, testing, and deployment documentation.
+
+Role 4 starts with mocked API responses and does not wait for Supabase or OpenAI. It must not duplicate evaluation logic in React components or edit `web/src/app/api/**`.
+
+### Interface hand-offs
+
+| Producer | Contract or output | Consumer |
+|---|---|---|
+| Role 1 | Repository interfaces, catalog records, API envelopes | Roles 2 and 3; Route Handlers consume Role 3 services |
+| Role 2 | `AiGateway`, `EmbeddingService`, extraction output, retrieved market context | Role 3 and Role 1 seed command |
+| Role 3 | Application services and typed API response shapes | Role 1 Route Handlers and Role 4 UI |
+| Role 4 | E2E failures, accessibility findings, and demo acceptance evidence | All roles during integration |
+
+The existing interface map is authoritative for repository method names. If a new field is needed, Role 3 updates the domain contract first, then the producer and consumer update their own modules in separate commits.
+
+### Integration checkpoints
+
+1. Foundation: Tasks 1 and 2, contracts, fixtures, and the real lockfile are merged.
+2. Interface: every role has a testable fake or fixture and publishes the exact inputs and outputs it expects.
+3. Backend: Role 1 repositories and Role 2 services are wired into Role 3 application services.
+4. UI: Role 4 switches from mocks to the integrated API and runs the full seller journey.
+5. Release: run tests, type-check, lint, build, seed twice, Playwright, and the adversarial acceptance checks before merging `integration/hackathon` to `main`.
+
+Merge order should be Role 1, Role 2, Role 3, then Role 4. Each role opens a small pull request into `integration/hackathon`; `main` remains the stable branch.
 
 ## Milestone gates
 
