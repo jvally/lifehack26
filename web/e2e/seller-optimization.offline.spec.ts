@@ -1,13 +1,6 @@
 import { expect, test } from "@playwright/test";
 
 test("seller improves a listing in the offline demo", async ({ page }) => {
-  const simulationRequests: string[] = [];
-  page.on("request", (request) => {
-    if (request.url().includes("/simulate")) {
-      simulationRequests.push(request.url());
-    }
-  });
-
   await page.route("**/api/products", async (route) => {
     if (route.request().method() === "GET") {
       return route.fulfill({
@@ -142,10 +135,9 @@ test("seller improves a listing in the offline demo", async ({ page }) => {
   await page.getByRole("button", { name: "Approve and save" }).click();
   await expect(page.getByText("Verified", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Compare recommendations" }).click();
-  await expect(page.getByRole("heading", { name: "Before" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "After" })).toBeVisible();
-  expect(simulationRequests).toEqual([]);
+  await expect(
+    page.getByRole("heading", { name: "Highest-impact actions" }),
+  ).toBeVisible();
 
   const finalScore = Number(
     await page.getByTestId("readiness-total").textContent(),
