@@ -1,7 +1,7 @@
 import type { EmbeddingService } from "@/services/embeddings";
 import type { AiGateway } from "@/services/ai-gateway";
 import type { ProductRepository } from "@/services/repositories/contracts";
-import { parseBuyerQuery } from "./parse-query";
+import { getQueryArtifacts } from "./query-artifacts";
 import { rankProducts } from "./rank-products";
 
 export async function simulateRecommendation(
@@ -17,11 +17,7 @@ export async function simulateRecommendation(
   if (!target?.passport || !target.originalPassport) {
     throw new Error("SIMULATION_PRODUCT_NOT_READY");
   }
-  const intent = await parseBuyerQuery(query, dependencies.ai);
-  const [embedding] = await dependencies.embeddings.embed([query]);
-  if (!embedding || embedding.length !== 1536) {
-    throw new Error("SIMULATION_EMBEDDING_INVALID");
-  }
+  const { intent, embedding } = await getQueryArtifacts(query, dependencies);
   const semanticCandidates = await dependencies.products.searchByEmbedding(
     intent.category,
     embedding,

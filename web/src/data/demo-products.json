@@ -8,5 +8,17 @@
   {"id":"stormrun","name":"StormRun","category":"running_shoes","description":"Weather-ready shoe for wet routes.","price":189,"currency":"SGD","terrain":"road","weight":275,"cushioning":"protective"},
   {"id":"sprintwave","name":"SprintWave","category":"running_shoes","description":"Light racing shoe for fast road sessions.","price":219,"currency":"SGD","terrain":"road","weight":205,"cushioning":"responsive"},
   {"id":"terraflow","name":"TerraFlow","category":"running_shoes","description":"Versatile trail-to-road trainer.","price":159,"currency":"SGD","terrain":"mixed","weight":280,"cushioning":"balanced"},
-  {"id":"endurance-lux","name":"Endurance Lux","category":"running_shoes","description":"Premium high-mileage trainer with support.","price":249,"currency":"SGD","terrain":"road","weight":270,"cushioning":"max"}
+  {"id":"endurance-lux","name":"Endurance Lux","category":"running_shoes","description":"Premium high-mileage trainer with support.","price":249,"currency":"SGD","terrain":"road","weight":270,"cushioning":"max"},
+  {"id":"monsoon-linen-shirt","name":"Monsoon Linen Shirt","category":"clothing","description":"Relaxed-fit linen shirt made for humid Singapore days, available in XS to XXL.","price":79,"currency":"SGD"},
+  {"id":"everyday-overshirt","name":"Everyday Overshirt","category":"clothing","description":"Recycled cotton overshirt with regular fit and machine-wash care.","price":89,"currency":"SGD"},
+  {"id":"teakline-console","name":"Teakline Console","category":"furniture","description":"Solid teak console table, 120 cm wide, with two drawers and flat-pack delivery.","price":499,"currency":"SGD"},
+  {"id":"cloudmod-sofa","name":"CloudMod Sofa","category":"furniture","description":"Three-seat modular sofa in stain-resistant fabric with washable covers.","price":1299,"currency":"SGD"},
+  {"id":"harbour-tote","name":"Harbour Tote","category":"accessories","description":"Water-resistant recycled canvas tote with a 15-inch laptop sleeve.","price":69,"currency":"SGD"},
+  {"id":"orbit-steel-watch","name":"Orbit Steel Watch","category":"accessories","description":"Stainless-steel everyday watch with 50 m water resistance and two-year warranty.","price":189,"currency":"SGD"},
+  {"id":"oil-control-foundation","name":"Oil Control Foundation","category":"makeup","description":"Buildable matte foundation for oily and combination skin, with 24 inclusive shades.","price":48,"currency":"SGD"},
+  {"id":"five-minute-glow-kit","name":"Five-Minute Glow Kit","category":"makeup","description":"Quick morning skincare and makeup set with niacinamide serum, tinted moisturiser, and SPF.","price":65,"currency":"SGD"},
+  {"id":"heritage-oat-milk","name":"Heritage Oat Milk","category":"groceries","description":"Unsweetened oat milk, vegan and dairy-free, made in Singapore. Refrigerate after opening.","price":6.5,"currency":"SGD"},
+  {"id":"sambal-crunch","name":"Sambal Crunch","category":"groceries","description":"Baked chilli snack with no artificial colours. Contains peanuts and sesame.","price":8.9,"currency":"SGD"},
+  {"id":"courtcraft-racket","name":"CourtCraft Racket","category":"sports_equipment","description":"Intermediate badminton racket, 82 g, balanced flex for training and club play.","price":129,"currency":"SGD"},
+  {"id":"flowform-yoga-mat","name":"FlowForm Yoga Mat","category":"sports_equipment","description":"Non-slip 6 mm yoga mat for home practice and studio sessions, with carry strap.","price":59,"currency":"SGD"}
 ]

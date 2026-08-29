@@ -1,10 +1,10 @@
 # AgentReady Coach
 
-AgentReady Coach turns an incomplete seller listing into an evidence-aware Product Passport, identifies what limits AI shopping recommendations, and guides the seller through the highest-impact answers.
+AgentReady Coach turns an incomplete seller listing into an evidence-aware Product Passport, identifies what limits AI shopping recommendations, and guides the seller through the highest-impact answers. It supports running shoes, clothing, furniture, accessories, makeup, groceries, and sports equipment, with automatic category detection for listings and shopper prompts.
 
 ## Architecture
 
-Listing import → Product Passport extraction → market context and deterministic evaluation → seller interview → before and after recommendation simulation.
+Listing import → automatic category detection → Product Passport extraction → market context and deterministic evaluation → seller interview → before and after recommendation simulation. The dashboard exposes a weighted AI-recommendability matrix covering product facts, shopper intent, evidence, search language, and consistency.
 
 The Next.js interface is separate from the deterministic domain engine. Product claims use one provenance state: `verified`, `seller_declared`, `ai_inferred`, or `missing`. Permitted competitor observations inform benchmarks only. They never become seller claims.
 
@@ -116,3 +116,15 @@ Code-complete means the secret-free checks pass. Release-verified additionally r
 ## Deployment boundary
 
 Deploy with `web` as the application root. Keep the Supabase service role key and OpenAI key server-side. This Phase 1 build is suitable for a controlled demonstration. It is not ready for public multi-user production until Phase 2 adds authentication, product ownership, user-scoped row-level security, and rate limiting.
+
+## Retrieval and scoring design decisions
+
+- **Structured intent plus embeddings:** shopper text is parsed into a typed intent with the OpenAI Responses API, while `text-embedding-3-small` creates a 1,536-dimensional vector for semantic matching. We do not depend on a heavyweight NLP keyword package; deterministic ranking handles hard constraints after retrieval.
+- **Hybrid market RAG:** market signals use Supabase/PostgreSQL full-text search (`tsvector`/`websearch_to_tsquery`) and Supabase `pgvector` similarity, fused with reciprocal rank. This keeps exact terms such as `oily skin`, `vegan`, or `under S$50` useful while still handling semantic phrasing.
+- **Vector product retrieval:** products are filtered by detected category and searched with an HNSW vector index. The product match function returns the complete product row in one database round trip, avoiding a second detail query.
+- **Latency controls:** intent parsing and embedding generation run concurrently. A five-minute in-process cache reuses identical query artifacts during warm server instances; failed requests are removed from the cache.
+- **Deterministic recommendation scoring:** after retrieval, hard constraints, preference coverage, evidence quality, and semantic similarity are scored locally. The seller-facing matrix weights product facts (30%), shopper intent (25%), evidence (20%), search language (15%), and consistency (10%).
+
+## Brand implementation pathway
+
+Seller-coach answers update the current Product Passport while preserving the original passport for comparison. The product workspace exposes an **Implementation patch** download after improvements are saved. The patch is a versioned JSON change set containing each field path, current value, proposed value, supporting evidence IDs, and reason for the recommendation. This is intentionally an adapter-neutral boundary: a brand can import it into a PIM, Shopify/commerce connector, ERP, or custom database without sharing database credentials. A future connector can consume the same patch after an explicit approval step and then re-run evaluation to show the measurable readiness lift.

@@ -525,6 +525,30 @@ export type Database = {
           similarity: number
         }[]
       }
+      match_products_with_rows: {
+        Args: {
+          query_category: string
+          query_embedding: string
+          result_limit: number
+        }
+        Returns: {
+          category_slug: string
+          currency: string | null
+          created_at: string
+          embedding: string | null
+          evaluation: Json | null
+          external_id: string | null
+          id: string
+          name: string
+          original_passport: Json | null
+          passport: Json | null
+          price: number | null
+          raw_listing: string
+          similarity: number
+          source_type: string
+          updated_at: string
+        }[]
+      }
       save_product_evaluation: {
         Args: { input_evaluation: Json; input_product_id: string }
         Returns: string

@@ -56,6 +56,10 @@ function signalRow(signal: MarketSignal, embedding: string) {
 
 function mapSignal(input: unknown): MarketSignal {
   const row = MarketSearchRowSchema.parse(input);
+  const observedAt = new Date(row.observed_at);
+  if (Number.isNaN(observedAt.getTime())) {
+    throw new Error("MARKET_SIGNAL_DATE_INVALID");
+  }
   return MarketSignalSchema.parse({
     id: row.id,
     category: row.category_slug,
@@ -70,7 +74,7 @@ function mapSignal(input: unknown): MarketSignal {
     frequency: row.frequency,
     sourceLabel: row.source_label,
     sourceUrl: row.source_url,
-    observedAt: row.observed_at,
+    observedAt: observedAt.toISOString(),
   });
 }
 

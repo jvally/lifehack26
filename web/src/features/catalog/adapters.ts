@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import type { RawProductInput } from "@/services/repositories/contracts";
+import { detectCategory } from "./detect-category";
 
 export type CatalogIssue = {
   row: number;
@@ -55,7 +56,7 @@ function normalizeRow(
   const categoryValue = row.category;
   const category =
     categoryValue === undefined || categoryValue === null || categoryValue === ""
-      ? "running_shoes"
+      ? detectCategory(`${name} ${typeof row.description === "string" ? row.description : ""}`)
       : typeof categoryValue === "string" && categoryValue.trim()
         ? categoryValue.trim()
         : null;
@@ -145,7 +146,7 @@ export class TextCatalogAdapter implements CatalogSourceAdapter {
       {
         externalId: null,
         name: firstLine.trim(),
-        category: "running_shoes",
+        category: detectCategory(trimmed),
         rawListing: trimmed,
         price: money.price,
         currency: money.currency,

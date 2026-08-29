@@ -9,6 +9,7 @@ import { GapList } from "./gap-list";
 import { MarketInsights } from "./market-insights";
 import { makeMockDashboard } from "./mock-dashboard-data";
 import { ProductPassportPanel } from "./product-passport-panel";
+import { ImplementationPatch } from "./implementation-patch";
 import { ReadinessBreakdown } from "./readiness-breakdown";
 import { SellerChat, type SellerAnswer } from "./seller-chat";
 
@@ -414,6 +415,9 @@ export function ProductDashboard({
         <div className="order-5 space-y-5 lg:col-span-3">
           <MarketInsights intelligence={dashboard.intelligence} />
         </div>
+      </div>
+      <div className="mt-5">
+        <ImplementationPatch productId={productId} offlineDemo={releaseState === "offline"} />
       </div>
       <div className="mt-5">
         <BeforeAfterPanel

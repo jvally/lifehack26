@@ -33,10 +33,7 @@ const ProductRowSchema = z.object({
   updated_at: z.string(),
 });
 
-const MatchRowSchema = z.object({
-  id: z.string().uuid(),
-  similarity: z.number(),
-});
+const MatchRowSchema = ProductRowSchema.extend({ similarity: z.number() });
 
 function parseEmbedding(value: number[] | string | null): number[] | null {
   if (value === null) return null;
@@ -184,7 +181,7 @@ export class SupabaseProductRepository implements ProductRepository {
     limit: number,
   ): Promise<Array<ProductRecord & { similarity: number }>> {
     const serializedEmbedding = serializeEmbedding(embedding);
-    const { data, error } = await this.client.rpc("match_products", {
+    const { data, error } = await this.client.rpc("match_products_with_rows", {
       query_category: category,
       query_embedding: serializedEmbedding,
       result_limit: limit,
@@ -192,28 +189,10 @@ export class SupabaseProductRepository implements ProductRepository {
     if (error) {
       throw new Error("PRODUCT_REPOSITORY_SEARCH_FAILED", { cause: error });
     }
-    const matches = MatchRowSchema.array().parse(data ?? []);
-    if (matches.length === 0) return [];
-    const { data: rows, error: rowsError } = await this.client
-      .from("products")
-      .select("*")
-      .in(
-        "id",
-        matches.map(({ id }) => id),
-      );
-    if (rowsError) {
-      throw new Error("PRODUCT_REPOSITORY_SEARCH_LOAD_FAILED", {
-        cause: rowsError,
-      });
-    }
-    const records = ProductRowSchema.array()
-      .parse(rows ?? [])
-      .map(mapProductRow);
-    const byId = new Map(records.map((record) => [record.id, record]));
-    return matches.flatMap((match) => {
-      const record = byId.get(match.id);
-      return record ? [{ ...record, similarity: match.similarity }] : [];
-    });
+    return MatchRowSchema.array().parse(data ?? []).map((match) => ({
+      ...mapProductRow(match),
+      similarity: match.similarity,
+    }));
   }
 
   async saveEvaluation(

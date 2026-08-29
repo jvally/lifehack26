@@ -11,6 +11,12 @@ describe("loadCategoryFeatureDefinitions", () => {
     );
   });
 
+  it("loads definitions for every supported retail category", () => {
+    for (const category of ["clothing", "furniture", "accessories", "makeup", "groceries", "sports_equipment"]) {
+      expect(loadCategoryFeatureDefinitions(category).length).toBeGreaterThan(0);
+    }
+  });
+
   it("rejects an unsupported category instead of using another category", () => {
     expect(() => loadCategoryFeatureDefinitions("laptops")).toThrow(
       "CATEGORY_INTELLIGENCE_NOT_CONFIGURED",
