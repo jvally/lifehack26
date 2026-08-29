@@ -1,5 +1,9 @@
 import "server-only";
 import { z } from "zod";
+export {
+  missingReleaseEnvironmentKeys,
+  RELEASE_ENVIRONMENT_KEYS,
+} from "./release-env";
 
 export const EnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
