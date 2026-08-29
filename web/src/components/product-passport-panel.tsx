@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FeatureDefinition } from "@/domain/market";
-import type { ProductPassport } from "@/domain/passport";
+import type { FeatureScalar, ProductPassport } from "@/domain/passport";
 import { EvidenceBadge } from "./evidence-badge";
 
 function displayValue(value: ProductPassport["features"][number]["value"]) {
@@ -15,15 +15,27 @@ export function ProductPassportPanel({
   passport,
   definitions,
   changedFeatureKeys = [],
+  onSaveFeature,
 }: {
   passport: ProductPassport;
   definitions: FeatureDefinition[];
   changedFeatureKeys?: string[];
+  onSaveFeature?: (key: string, value: FeatureScalar) => Promise<void>;
 }) {
+  const visibleFeatureKeys = new Set([
+    "weight",
+    "terrain",
+    "durability",
+    "breathability",
+    "cushioning",
+    "distance_suitability",
+  ]);
+  const visibleDefinitions = definitions.filter(({ key }) => visibleFeatureKeys.has(key));
   const [expandedFeatureKeys, setExpandedFeatureKeys] = useState<string[]>([]);
   const [overflowingFeatureKeys, setOverflowingFeatureKeys] = useState<string[]>([]);
   const [savingFeatureKeys, setSavingFeatureKeys] = useState<string[]>([]);
   const [savedFeatureKeys, setSavedFeatureKeys] = useState<string[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const previewRefs = useRef(new Map<string, HTMLParagraphElement>());
   const saveTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const [draftValues, setDraftValues] = useState<Record<string, string>>(() =>
@@ -69,24 +81,31 @@ export function ProductPassportPanel({
     );
   };
 
-  const saveFeature = (key: string) => {
+  const saveFeature = async (key: string) => {
+    const rawValue = draftValues[key]?.trim() ?? "";
+    if (!rawValue) return;
     setSavedFeatureKeys((current) => current.filter((featureKey) => featureKey !== key));
     setSavingFeatureKeys((current) => [...new Set([...current, key])]);
-
-    const saveTimer = setTimeout(() => {
-      saveTimers.current.delete(saveTimer);
-      setSavingFeatureKeys((current) => current.filter((featureKey) => featureKey !== key));
+    setSaveError(null);
+    try {
+      const definition = definitions.find((item) => item.key === key);
+      if (!definition) throw new Error("Unknown product specification.");
+      const value = definition.dataType === "number"
+        ? Number(rawValue)
+        : definition.dataType === "string_array"
+          ? rawValue.split(",").map((item) => item.trim()).filter(Boolean)
+          : rawValue;
+      if (typeof value === "number" && !Number.isFinite(value)) {
+        throw new Error("Enter a valid number.");
+      }
+      await onSaveFeature?.(key, value);
+      await new Promise((resolve) => setTimeout(resolve, 450));
       setSavedFeatureKeys((current) => [...new Set([...current, key])]);
-
-      const confirmationTimer = setTimeout(() => {
-        saveTimers.current.delete(confirmationTimer);
-        setSavedFeatureKeys((current) =>
-          current.filter((featureKey) => featureKey !== key),
-        );
-      }, 2_000);
-      saveTimers.current.add(confirmationTimer);
-    }, 450);
-    saveTimers.current.add(saveTimer);
+    } catch (reason) {
+      setSaveError(reason instanceof Error ? reason.message : "We could not save this specification.");
+    } finally {
+      setSavingFeatureKeys((current) => current.filter((featureKey) => featureKey !== key));
+    }
   };
 
   useEffect(
@@ -98,20 +117,20 @@ export function ProductPassportPanel({
   );
 
   return (
-    <section className="surface-card p-5 sm:p-6" aria-labelledby="passport-heading">
+    <section className="surface-card p-4 sm:p-5" aria-labelledby="passport-heading">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Product truth</p>
-          <h2 id="passport-heading" className="mt-2 text-2xl font-semibold tracking-tight">
+          <h2 id="passport-heading" className="mt-1 text-xl font-semibold tracking-tight">
             {passport.name}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
             {passport.description}
           </p>
         </div>
       </div>
-      <div className="mt-7 grid items-start gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {definitions.map((definition) => {
+      <div className="mt-4 grid items-start gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {visibleDefinitions.map((definition) => {
           const feature = byKey.get(definition.key) ?? {
             key: definition.key,
             label: definition.label,
@@ -133,7 +152,7 @@ export function ProductPassportPanel({
           return (
             <div
               key={definition.key}
-              className={`${expanded ? "min-h-[248px]" : hasOverflowingContent ? "h-[248px] overflow-hidden" : "h-[224px] overflow-hidden"} rounded-xl border border-[var(--border)] bg-[var(--canvas)] p-4 ${
+              className={`${expanded ? "min-h-[210px]" : hasOverflowingContent ? "h-[210px] overflow-hidden" : "h-[184px] overflow-hidden"} rounded-xl border border-[var(--border)] bg-[var(--canvas)] p-3 ${
                 changedFeatureKeys.includes(definition.key) ? "changed-feature" : ""
               }`}
             >
@@ -165,15 +184,15 @@ export function ProductPassportPanel({
                     [definition.key]: event.target.value,
                   }))
                 }
-                className="mt-3 min-h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-sm text-[var(--ink)]"
+                className="mt-2 min-h-9 w-full rounded-lg border border-[var(--border)] bg-white px-2.5 text-xs text-[var(--ink)]"
                 placeholder={`Enter ${definition.label.toLowerCase()}`}
               />
-              <div className="mt-3 flex items-center gap-3">
+              <div className="mt-2 flex items-center gap-2">
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={() => saveFeature(definition.key)}
-                  className="button-primary min-h-10 px-3 text-sm font-semibold disabled:cursor-wait disabled:opacity-70"
+                  onClick={() => void saveFeature(definition.key)}
+                  className="button-primary min-h-9 px-2.5 text-xs font-semibold disabled:cursor-wait disabled:opacity-70"
                 >
                   {saving ? "Saving…" : "Save"}
                 </button>
@@ -181,6 +200,7 @@ export function ProductPassportPanel({
                   {saved ? "Saved" : ""}
                 </span>
               </div>
+              {saveError && <p role="alert" className="mt-2 text-xs text-[var(--missing)]">{saveError}</p>}
               {hasOverflowingContent && (
                 <button
                   type="button"

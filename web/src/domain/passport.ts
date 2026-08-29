@@ -39,5 +39,6 @@ export const ProductPassportSchema = z.object({
 });
 
 export type EvidenceStatus = z.infer<typeof EvidenceStatusSchema>;
+export type FeatureScalar = z.infer<typeof FeatureScalarSchema>;
 export type FeatureValue = z.infer<typeof FeatureValueSchema>;
 export type ProductPassport = z.infer<typeof ProductPassportSchema>;
