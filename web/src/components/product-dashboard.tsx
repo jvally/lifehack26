@@ -73,6 +73,22 @@ export function ProductDashboard({
     if (!definition) throw new Error("Unknown product specification.");
 
     if (offlineDemo) {
+      if (featureKey === "price") {
+        if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+          throw new Error("Enter a valid price.");
+        }
+        const passport = {
+          ...dashboard.passport,
+          price: value,
+          currency: dashboard.passport.currency ?? "SGD",
+          updatedAt: new Date().toISOString(),
+        };
+        const evaluation = evaluateListing(passport, dashboard.intelligence);
+        approveMockBrandProduct(productId, passport);
+        setDashboard((current) => current ? { ...current, passport, evaluation } : current);
+        setChangedFeatureKeys((current) => [...new Set([...current, featureKey])]);
+        return;
+      }
       const passport = applySellerAnswer(
         dashboard.passport,
         {
