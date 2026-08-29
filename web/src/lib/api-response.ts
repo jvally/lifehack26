@@ -67,6 +67,13 @@ function catalogIssues(error: unknown): unknown | undefined {
   return undefined;
 }
 
+function isAiProviderUnavailable(error: unknown): boolean {
+  if (error instanceof Error && /no credits remaining|billing|rate limit|insufficient_quota/i.test(error.message)) return true;
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as { status?: unknown; code?: unknown; type?: unknown };
+  return candidate.status === 429 || candidate.code === "insufficient_quota" || candidate.type === "insufficient_quota";
+}
+
 export async function withApiErrors(
   operation: () => Promise<Response>,
   requestId = crypto.randomUUID(),
@@ -100,10 +107,7 @@ export async function withApiErrors(
         requestId,
       );
     }
-    if (
-      error instanceof Error &&
-      /no credits remaining|billing|rate limit/i.test(error.message)
-    ) {
+    if (isAiProviderUnavailable(error)) {
       return apiFailure(
         "AI_PROVIDER_UNAVAILABLE",
         "The AI provider is unavailable. Check the OpenAI account credits and billing settings.",
