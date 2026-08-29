@@ -10,6 +10,7 @@ import {
 import {
   createDemoSeedApplication,
   DemoSeedDataSchema,
+  loadDemoSeedData,
   seedDemoData,
   SupabaseDemoSeedStore,
   type DemoSeedStore,
@@ -113,6 +114,27 @@ class FakeSeedStore implements DemoSeedStore {
 }
 
 describe("seedDemoData", () => {
+  it("loads the checked-in demo files as a valid seed", async () => {
+    const data = await loadDemoSeedData();
+    const querySignalIds = new Set(
+      data.marketSignals
+        .filter((signal) => signal.signalType === "user_query")
+        .map((signal) => signal.id),
+    );
+
+    expect(data.products).toHaveLength(10);
+    expect(data.queries).toHaveLength(20);
+    expect(data.marketSignals).toHaveLength(22);
+    expect(data.featureDefinitions).toHaveLength(12);
+    expect(data.queries.every((query) => querySignalIds.has(query.id))).toBe(
+      true,
+    );
+    expect(
+      new Set(data.products.map((product) => product.category)).size,
+    ).toBe(1);
+    expect(data.products[0]?.category).toBe("running_shoes");
+  });
+
   it("is idempotent and preserves the weak CloudRun Pro passport", async () => {
     const store = new FakeSeedStore();
     const signals = new Map<string, MarketSignal>();

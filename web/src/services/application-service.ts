@@ -1,8 +1,5 @@
-import rawRunningShoeFeatures from "@/data/running-shoes-category.json";
-import {
-  FeatureDefinitionSchema,
-  type CategoryIntelligence,
-} from "@/domain/market";
+import type { CategoryIntelligence } from "@/domain/market";
+import { loadCategoryFeatureDefinitions } from "@/data/category-definitions";
 import { evaluateListing } from "@/features/evaluation/evaluate-listing";
 import { extractProductPassport } from "@/features/extraction/extract-passport";
 import { buildCategoryIntelligence } from "@/features/market/build-category-intelligence";
@@ -33,9 +30,7 @@ export async function loadIntelligence(
     embeddings: dependencies.embeddings,
     market: dependencies.market,
   });
-  const baseFeatures = FeatureDefinitionSchema.array().parse(
-    rawRunningShoeFeatures,
-  );
+  const baseFeatures = loadCategoryFeatureDefinitions(product.passport.category);
   return buildCategoryIntelligence(
     product.passport.category,
     baseFeatures,
