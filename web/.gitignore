@@ -8,6 +8,8 @@ coverage/
 !.env.example
 playwright-report/
 test-results/
+*.tsbuildinfo
+.DS_Store
 
 # local Supabase state
 .supabase/

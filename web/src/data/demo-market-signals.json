@@ -1,0 +1,66 @@
+[
+  {
+    "id": "query-humid-half-marathon",
+    "category": "running_shoes",
+    "signalType": "user_query",
+    "rawText": "Lightweight breathable road shoes for half-marathon training in humid weather",
+    "parsedIntent": {
+      "category": "running_shoes",
+      "goal": "half_marathon",
+      "hardConstraints": { "terrain": "road" },
+      "preferences": ["lightweight", "breathable"],
+      "contexts": ["humid_weather"]
+    },
+    "featureKeys": ["weight", "breathability", "terrain"],
+    "featureValues": { "terrain": "road" },
+    "frequency": 20,
+    "sourceLabel": "aggregated_demo_queries",
+    "sourceUrl": null,
+    "observedAt": "2026-08-29T00:00:00.000Z"
+  },
+  {
+    "id": "query-rain-road",
+    "category": "running_shoes",
+    "signalType": "user_query",
+    "rawText": "Waterproof road running shoes for rainy commutes",
+    "parsedIntent": {
+      "category": "running_shoes",
+      "goal": "commuting",
+      "hardConstraints": { "waterproof": true, "terrain": "road" },
+      "preferences": [],
+      "contexts": ["rain"]
+    },
+    "featureKeys": ["waterproof", "terrain"],
+    "featureValues": { "waterproof": true, "terrain": "road" },
+    "frequency": 8,
+    "sourceLabel": "aggregated_demo_queries",
+    "sourceUrl": null,
+    "observedAt": "2026-08-29T00:00:00.000Z"
+  },
+  {
+    "id": "competitor-road-245",
+    "category": "running_shoes",
+    "signalType": "competitor_observation",
+    "rawText": "Observed competitor road shoe: 245 g, 8 mm heel drop, S$189",
+    "parsedIntent": null,
+    "featureKeys": ["weight", "heel_drop", "terrain", "price"],
+    "featureValues": { "weight": 245, "heel_drop": 8, "terrain": "road", "price": 189 },
+    "frequency": 1,
+    "sourceLabel": "permitted_competitor_dataset",
+    "sourceUrl": null,
+    "observedAt": "2026-08-29T00:00:00.000Z"
+  },
+  {
+    "id": "competitor-road-255",
+    "category": "running_shoes",
+    "signalType": "competitor_observation",
+    "rawText": "Observed competitor road shoe: 255 g, 10 mm heel drop, S$199",
+    "parsedIntent": null,
+    "featureKeys": ["weight", "heel_drop", "terrain", "price"],
+    "featureValues": { "weight": 255, "heel_drop": 10, "terrain": "road", "price": 199 },
+    "frequency": 1,
+    "sourceLabel": "permitted_competitor_dataset",
+    "sourceUrl": null,
+    "observedAt": "2026-08-29T00:00:00.000Z"
+  }
+]
