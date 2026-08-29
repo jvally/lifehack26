@@ -124,3 +124,7 @@ Deploy with `web` as the application root. Keep the Supabase service role key an
 - **Vector product retrieval:** products are filtered by detected category and searched with an HNSW vector index. The product match function returns the complete product row in one database round trip, avoiding a second detail query.
 - **Latency controls:** intent parsing and embedding generation run concurrently. A five-minute in-process cache reuses identical query artifacts during warm server instances; failed requests are removed from the cache.
 - **Deterministic recommendation scoring:** after retrieval, hard constraints, preference coverage, evidence quality, and semantic similarity are scored locally. The seller-facing matrix weights product facts (30%), shopper intent (25%), evidence (20%), search language (15%), and consistency (10%).
+
+## Brand implementation pathway
+
+Seller-coach answers update the current Product Passport while preserving the original passport for comparison. The product workspace exposes an **Implementation patch** download after improvements are saved. The patch is a versioned JSON change set containing each field path, current value, proposed value, supporting evidence IDs, and reason for the recommendation. This is intentionally an adapter-neutral boundary: a brand can import it into a PIM, Shopify/commerce connector, ERP, or custom database without sharing database credentials. A future connector can consume the same patch after an explicit approval step and then re-run evaluation to show the measurable readiness lift.
