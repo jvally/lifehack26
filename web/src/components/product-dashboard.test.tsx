@@ -42,7 +42,6 @@ describe("ProductDashboard", () => {
     );
 
     render(<ProductDashboard productId="product-1" />);
-
     expect(screen.getByText("Analysing listing…")).toBeInTheDocument();
     expect(screen.queryByText("CloudRun Pro")).not.toBeInTheDocument();
 
