@@ -155,4 +155,35 @@ describe("ProductDashboard", () => {
     expect(await screen.findByText("CloudRun Pro")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("compacts product detail cards until the seller asks to show more", async () => {
+    render(<ProductDashboard productId="product-1" offlineDemo />);
+
+    const passport = await screen.findByRole("region", {
+      name: "CloudRun Pro",
+    });
+    expect(within(passport).getByText("Measured weight")).toBeInTheDocument();
+    expect(
+      within(passport).queryByText("Weather suitability"),
+    ).not.toBeInTheDocument();
+
+    const toggle = within(passport).getByRole("button", {
+      name: "Show more (2 more details)",
+    });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(toggle);
+
+    expect(within(passport).getByText("Weather suitability")).toBeInTheDocument();
+    expect(within(passport).getByText("Distance suitability")).toBeInTheDocument();
+    expect(
+      within(passport).getByRole("button", { name: "Show less" }),
+    ).toHaveAttribute("aria-expanded", "true");
+
+    await userEvent.click(
+      within(passport).getByRole("button", { name: "Show less" }),
+    );
+    expect(
+      within(passport).queryByText("Weather suitability"),
+    ).not.toBeInTheDocument();
+  });
 });
