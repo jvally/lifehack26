@@ -11,11 +11,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "seed:demo": "tsx src/data/seed-demo.ts",
+    "check:release-env": "tsx src/scripts/check-release-env.ts",
+    "seed:demo": "node --conditions=react-server --import tsx src/data/seed-demo.ts",
+    "seed:release": "npm run check:release-env && npm run seed:demo && npm run seed:demo",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "e2e": "playwright test"
+    "e2e": "npm run e2e:offline",
+    "e2e:offline": "tsx scripts/run-playwright.ts offline",
+    "e2e:live": "tsx scripts/run-playwright.ts live"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

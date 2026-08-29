@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEnv } from "./env";
+import { missingReleaseEnvironmentKeys, parseEnv } from "./env";
 
 const validEnvironment = {
   NEXT_PUBLIC_SUPABASE_URL: "https://project-id.supabase.co",
@@ -20,5 +20,17 @@ describe("parseEnv", () => {
     expect(() =>
       parseEnv({ NEXT_PUBLIC_SUPABASE_URL: validEnvironment.NEXT_PUBLIC_SUPABASE_URL }),
     ).toThrow();
+  });
+
+  it("reports missing release variable names without returning values", () => {
+    expect(
+      missingReleaseEnvironmentKeys({ OPENAI_API_KEY: "secret-value" }),
+    ).toEqual([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "OPENAI_EXTRACTION_MODEL",
+      "OPENAI_QUERY_MODEL",
+      "OPENAI_EMBEDDING_MODEL",
+    ]);
   });
 });
