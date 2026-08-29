@@ -282,10 +282,30 @@ export async function loadDemoSeedData(
       readJson(resolve(dataDirectory, "demo-market-signals.json")),
       readJson(resolve(dataDirectory, "running-shoes-category.json")),
     ]);
+  const demoQueries = DemoQuerySchema.array().parse(queries);
+  const querySignals: MarketSignal[] = demoQueries.map((query) => ({
+    id: query.id,
+    category: "running_shoes",
+    signalType: "user_query",
+    rawText: query.query,
+    parsedIntent: {
+      category: "running_shoes",
+      goal: null,
+      hardConstraints: {},
+      preferences: [],
+      contexts: [],
+    },
+    featureKeys: query.featureKeys,
+    featureValues: {},
+    frequency: query.frequency,
+    sourceLabel: "aggregated_demo_queries",
+    sourceUrl: null,
+    observedAt: "2026-08-29T00:00:00.000Z",
+  }));
   return DemoSeedDataSchema.parse({
     products,
-    queries,
-    marketSignals,
+    queries: demoQueries,
+    marketSignals: [...querySignals, ...MarketSignalSchema.array().parse(marketSignals)],
     featureDefinitions,
   });
 }
@@ -313,8 +333,8 @@ async function main(): Promise<void> {
 
 const entryPath = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : "";
 if (entryPath === import.meta.url) {
-  main().catch((error: unknown) => {
-    console.error(error);
+main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
   });
 }
