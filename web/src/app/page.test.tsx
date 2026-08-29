@@ -10,7 +10,9 @@ describe("Home", () => {
       screen.getByRole("heading", { name: "AgentReady Coach" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/teach every product how to answer an AI shopper/i),
+      screen.getByText(
+        /give every product the evidence it needs to answer an AI shopper/i,
+      ),
     ).toBeInTheDocument();
   });
 });

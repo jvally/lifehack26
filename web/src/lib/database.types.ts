@@ -81,6 +81,53 @@ export type Database = {
           },
         ]
       }
+      evidence_records: {
+        Row: {
+          created_at: string
+          extracted_text: string
+          feature_key: string
+          id: string
+          media_type: string
+          original_name: string | null
+          product_id: string
+          storage_path: string | null
+          supported: boolean
+          supporting_excerpt: string | null
+        }
+        Insert: {
+          created_at?: string
+          extracted_text: string
+          feature_key: string
+          id?: string
+          media_type: string
+          original_name?: string | null
+          product_id: string
+          storage_path?: string | null
+          supported: boolean
+          supporting_excerpt?: string | null
+        }
+        Update: {
+          created_at?: string
+          extracted_text?: string
+          feature_key?: string
+          id?: string
+          media_type?: string
+          original_name?: string | null
+          product_id?: string
+          storage_path?: string | null
+          supported?: boolean
+          supporting_excerpt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_records_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_definitions: {
         Row: {
           answerability: number

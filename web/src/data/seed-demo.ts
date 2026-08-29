@@ -8,15 +8,21 @@ import {
   FeatureDefinitionSchema,
   MarketSignalSchema,
   type FeatureDefinition,
+  type MarketSignal,
 } from "@/domain/market";
 import { JsonCatalogAdapter } from "@/features/catalog/adapters";
+import { extractProductPassport } from "@/features/extraction/extract-passport";
+import { importMarketSignals } from "@/features/market/import-market-signals";
 import type { Database } from "@/lib/database.types";
 import { parseEnv } from "@/lib/env";
-import {
-  getRequiredApplicationServices,
-  type ApplicationServices,
-} from "@/services/application";
-import type { RawProductInput } from "@/services/repositories/contracts";
+import type { AiGateway } from "@/services/ai-gateway";
+import { getApplicationDependencies } from "@/services/container";
+import type { EmbeddingService } from "@/services/embeddings";
+import type {
+  MarketRepository,
+  ProductRepository,
+  RawProductInput,
+} from "@/services/repositories/contracts";
 
 const DemoProductSchema = z
   .object({
@@ -88,10 +94,39 @@ export interface DemoSeedStore {
   upsertProducts(products: RawProductInput[]): Promise<ProductUpsertResult>;
 }
 
-type DemoSeedApplication = Pick<
-  ApplicationServices,
-  "importMarketSignals" | "extractProduct"
->;
+type DemoSeedApplication = {
+  importMarketSignals(signals: MarketSignal[]): Promise<unknown>;
+  extractProduct(productId: string): Promise<unknown>;
+};
+
+type DemoSeedRuntimeDependencies = {
+  ai: AiGateway;
+  embeddings: EmbeddingService;
+  products: ProductRepository;
+  market: MarketRepository;
+};
+
+export function createDemoSeedApplication(
+  dependencies: DemoSeedRuntimeDependencies,
+): DemoSeedApplication {
+  return {
+    importMarketSignals(signals) {
+      return importMarketSignals(signals, {
+        embeddings: dependencies.embeddings,
+        market: dependencies.market,
+      });
+    },
+    async extractProduct(productId) {
+      const product = await dependencies.products.get(productId);
+      if (!product) throw new Error("PRODUCT_NOT_FOUND");
+      return extractProductPassport(product, {
+        ai: dependencies.ai,
+        embeddings: dependencies.embeddings,
+        products: dependencies.products,
+      });
+    },
+  };
+}
 
 export type DemoSeedDependencies = {
   store: DemoSeedStore;
@@ -259,7 +294,8 @@ async function main(): Promise<void> {
   dotenv.config({ path: resolve(process.cwd(), ".env.local") });
   dotenv.config({ path: resolve(process.cwd(), ".env") });
   const environment = parseEnv(process.env);
-  const application = getRequiredApplicationServices();
+  const dependencies = getApplicationDependencies();
+  const application = createDemoSeedApplication(dependencies);
   const client = createClient<Database>(
     environment.NEXT_PUBLIC_SUPABASE_URL,
     environment.SUPABASE_SERVICE_ROLE_KEY,

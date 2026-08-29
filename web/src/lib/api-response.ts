@@ -28,7 +28,6 @@ export class ApiRequestError extends Error {
     this.name = "ApiRequestError";
   }
 }
-
 export function apiSuccess<T>(
   data: T,
   status = 200,

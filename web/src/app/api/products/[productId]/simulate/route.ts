@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { simulateRecommendation } from "@/features/recommendation/simulate-recommendation";
 import { apiSuccess, withApiErrors } from "@/lib/api-response";
 import { getApplicationDependencies } from "@/services/container";
 
@@ -15,9 +16,10 @@ export async function POST(
     const { productId } = ParamsSchema.parse(await context.params);
     const { query } = RequestSchema.parse(await request.json());
     return apiSuccess(
-      await getApplicationDependencies().application.simulateProduct(
+      await simulateRecommendation(
         productId,
         query,
+        getApplicationDependencies(),
       ),
     );
   });

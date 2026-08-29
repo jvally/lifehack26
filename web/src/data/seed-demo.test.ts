@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import type { MarketSignal } from "@/domain/market";
+import { FakeAiGateway } from "@/services/ai-gateway";
+import { FakeEmbeddingService } from "@/services/embeddings";
 import type { RawProductInput } from "@/services/repositories/contracts";
 import {
+  InMemoryMarketRepository,
+  InMemoryProductRepository,
+} from "@/services/repositories/in-memory";
+import {
+  createDemoSeedApplication,
   DemoSeedDataSchema,
   seedDemoData,
   SupabaseDemoSeedStore,
@@ -138,6 +145,58 @@ describe("seedDemoData", () => {
         featureDefinitions: [],
       }),
     ).toThrow();
+  });
+
+  it("composes integrated market import and passport extraction", async () => {
+    const products = new InMemoryProductRepository();
+    const market = new InMemoryMarketRepository();
+    const embeddings = new FakeEmbeddingService();
+    const product = await products.create({
+      externalId: "competitor-1",
+      name: "Competitor 1",
+      category: "running_shoes",
+      rawListing: "Structured competitor listing",
+      price: 171,
+      currency: "SGD",
+      sourceType: "json",
+    });
+    const ai = new FakeAiGateway({
+      async extractProduct() {
+        return {
+          name: "Competitor 1",
+          category: "running_shoes",
+          description: "Structured competitor listing",
+          price: 171,
+          currency: "SGD",
+          features: [],
+          useCases: [],
+          suitableContexts: [],
+          limitations: [],
+        };
+      },
+      async parseQuery() {
+        throw new Error("parseQuery is not used in this test");
+      },
+      async verifyEvidence() {
+        throw new Error("verifyEvidence is not used in this test");
+      },
+    });
+    const application = createDemoSeedApplication({
+      ai,
+      embeddings,
+      products,
+      market,
+    });
+    const signal = DemoSeedDataSchema.parse(makeSeedData()).marketSignals[0];
+
+    await application.importMarketSignals([signal]);
+    await application.extractProduct(product.id);
+
+    expect((await products.get(product.id))?.passport?.productId).toBe(product.id);
+    const [queryEmbedding] = await embeddings.embed([signal.rawText]);
+    await expect(
+      market.retrieve("running_shoes", signal.rawText, queryEmbedding, 1),
+    ).resolves.toEqual([signal]);
   });
 });
 

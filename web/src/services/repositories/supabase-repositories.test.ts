@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ListingEvaluation } from "@/domain/evaluation";
 import type { MarketSignal } from "@/domain/market";
+import { SupabaseEvidenceRepository } from "./supabase-evidence-repository";
 import { SupabaseMarketRepository } from "./supabase-market-repository";
 import { SupabaseProductRepository } from "./supabase-product-repository";
 import { SupabaseSessionRepository } from "./supabase-session-repository";
@@ -303,6 +304,107 @@ describe("SupabaseMarketRepository", () => {
     expect(JSON.parse(rpcArguments.query_embedding as string)).toEqual(
       embedding,
     );
+  });
+});
+
+describe("SupabaseEvidenceRepository", () => {
+  const evidenceRow = {
+    id: "6a69abcc-4d4d-4528-b76d-1dcab3bc6815",
+    product_id: productRow.id,
+    feature_key: "weight",
+    original_name: null,
+    media_type: "text/plain",
+    storage_path: null,
+    extracted_text: "The shoe weighs 220 g.",
+    supported: true,
+    supporting_excerpt: "weighs 220 g",
+    created_at: "2026-08-29T00:00:00.000Z",
+  };
+
+  it("creates and maps an evidence record", async () => {
+    const single = vi.fn().mockResolvedValue({ data: evidenceRow, error: null });
+    const select = vi.fn(() => ({ single }));
+    const insert = vi.fn((input: unknown) => {
+      void input;
+      return { select };
+    });
+    const client = { from: vi.fn(() => ({ insert })) };
+    const repository = new SupabaseEvidenceRepository(client as never);
+
+    const created = await repository.create({
+      productId: productRow.id,
+      featureKey: "weight",
+      originalName: null,
+      mediaType: "text/plain",
+      storagePath: null,
+      extractedText: "The shoe weighs 220 g.",
+      supported: true,
+      supportingExcerpt: "weighs 220 g",
+    });
+
+    expect(insert).toHaveBeenCalledWith({
+      product_id: productRow.id,
+      feature_key: "weight",
+      original_name: null,
+      media_type: "text/plain",
+      storage_path: null,
+      extracted_text: "The shoe weighs 220 g.",
+      supported: true,
+      supporting_excerpt: "weighs 220 g",
+    });
+    expect(created).toEqual({
+      id: evidenceRow.id,
+      productId: productRow.id,
+      featureKey: "weight",
+      originalName: null,
+      mediaType: "text/plain",
+      storagePath: null,
+      extractedText: "The shoe weighs 220 g.",
+      supported: true,
+      supportingExcerpt: "weighs 220 g",
+      createdAt: evidenceRow.created_at,
+    });
+  });
+
+  it("lists a product's evidence in creation order", async () => {
+    const order = vi.fn().mockResolvedValue({ data: [evidenceRow], error: null });
+    const eq = vi.fn(() => ({ order }));
+    const select = vi.fn(() => ({ eq }));
+    const client = { from: vi.fn(() => ({ select })) };
+    const repository = new SupabaseEvidenceRepository(client as never);
+
+    const records = await repository.listForProduct(productRow.id);
+
+    expect(eq).toHaveBeenCalledWith("product_id", productRow.id);
+    expect(order).toHaveBeenCalledWith("created_at", { ascending: true });
+    expect(records[0]).toMatchObject({
+      id: evidenceRow.id,
+      productId: productRow.id,
+    });
+  });
+
+  it("maps an unknown evidence product to the repository contract", async () => {
+    const single = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: "23503", message: "foreign key violation" },
+    });
+    const select = vi.fn(() => ({ single }));
+    const insert = vi.fn(() => ({ select }));
+    const client = { from: vi.fn(() => ({ insert })) };
+    const repository = new SupabaseEvidenceRepository(client as never);
+
+    await expect(
+      repository.create({
+        productId: productRow.id,
+        featureKey: "weight",
+        originalName: null,
+        mediaType: "text/plain",
+        storagePath: null,
+        extractedText: "The shoe weighs 220 g.",
+        supported: true,
+        supportingExcerpt: "weighs 220 g",
+      }),
+    ).rejects.toThrow("PRODUCT_NOT_FOUND");
   });
 });
 

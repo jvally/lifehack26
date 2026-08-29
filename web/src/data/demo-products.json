@@ -1,0 +1,12 @@
+[
+  {"id":"cloudrun-pro","name":"CloudRun Pro","category":"running_shoes","description":"A lightweight and comfortable running shoe suitable for all runners. Made with premium materials.","price":179,"currency":"SGD"},
+  {"id":"roadline-elite","name":"Roadline Elite","category":"running_shoes","description":"Verified road racer with a breathable mesh upper.","price":199,"currency":"SGD","terrain":"road","weight":218,"cushioning":"responsive"},
+  {"id":"trailforge-x","name":"TrailForge X","category":"running_shoes","description":"Grip-focused trail shoe for wet, technical routes.","price":209,"currency":"SGD","terrain":"trail","weight":290,"cushioning":"protective"},
+  {"id":"citystride","name":"CityStride","category":"running_shoes","description":"Everyday city running shoe with soft cushioning.","price":139,"currency":"SGD","terrain":"road","weight":260,"cushioning":"soft"},
+  {"id":"marathon-air","name":"Marathon Air","category":"running_shoes","description":"Long-distance road shoe with a ventilated upper.","price":229,"currency":"SGD","terrain":"road","weight":235,"cushioning":"max"},
+  {"id":"pacecraft-5","name":"PaceCraft 5","category":"running_shoes","description":"Stable daily trainer for road mileage.","price":169,"currency":"SGD","terrain":"road","weight":255,"cushioning":"balanced"},
+  {"id":"stormrun","name":"StormRun","category":"running_shoes","description":"Weather-ready shoe for wet routes.","price":189,"currency":"SGD","terrain":"road","weight":275,"cushioning":"protective"},
+  {"id":"sprintwave","name":"SprintWave","category":"running_shoes","description":"Light racing shoe for fast road sessions.","price":219,"currency":"SGD","terrain":"road","weight":205,"cushioning":"responsive"},
+  {"id":"terraflow","name":"TerraFlow","category":"running_shoes","description":"Versatile trail-to-road trainer.","price":159,"currency":"SGD","terrain":"mixed","weight":280,"cushioning":"balanced"},
+  {"id":"endurance-lux","name":"Endurance Lux","category":"running_shoes","description":"Premium high-mileage trainer with support.","price":249,"currency":"SGD","terrain":"road","weight":270,"cushioning":"max"}
+]

@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { answerInterview } from "@/features/interviews/interview-service";
 import { apiSuccess, withApiErrors } from "@/lib/api-response";
+import { loadIntelligence } from "@/services/application-service";
 import { getApplicationDependencies } from "@/services/container";
 
 const ParamsSchema = z.object({ sessionId: z.string().uuid() });
@@ -33,10 +35,18 @@ export async function POST(
   return withApiErrors(async () => {
     const { sessionId } = ParamsSchema.parse(await context.params);
     const answer = AnswerRequestSchema.parse(await request.json());
+    const dependencies = getApplicationDependencies();
+    const session = await dependencies.sessions.get(sessionId);
+    if (!session) throw new Error("INTERVIEW_SESSION_NOT_FOUND");
+    const intelligence = await loadIntelligence(
+      session.productId,
+      dependencies,
+    );
     return apiSuccess(
-      await getApplicationDependencies().application.answerInterview(
+      await answerInterview(
         sessionId,
         answer,
+        { ...dependencies, intelligence },
       ),
     );
   });

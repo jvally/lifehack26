@@ -1,6 +1,8 @@
 import type { MarketSignal } from "@/domain/market";
 import type { ProductPassport } from "@/domain/passport";
 import type {
+  EvidenceRecord,
+  EvidenceRepository,
   InterviewMessage,
   InterviewSession,
   MarketRepository,
@@ -205,5 +207,28 @@ export class InMemorySessionRepository implements SessionRepository {
       throw new Error("INTERVIEW_SESSION_NOT_FOUND");
     }
     return session;
+  }
+}
+
+export class InMemoryEvidenceRepository implements EvidenceRepository {
+  private readonly records = new Map<string, EvidenceRecord>();
+
+  async create(
+    input: Omit<EvidenceRecord, "id" | "createdAt">,
+  ): Promise<EvidenceRecord> {
+    const record: EvidenceRecord = {
+      ...clone(input),
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    this.records.set(record.id, clone(record));
+    return clone(record);
+  }
+
+  async listForProduct(productId: string): Promise<EvidenceRecord[]> {
+    return [...this.records.values()]
+      .filter((record) => record.productId === productId)
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+      .map(clone);
   }
 }

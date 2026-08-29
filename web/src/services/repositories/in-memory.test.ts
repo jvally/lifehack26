@@ -3,6 +3,7 @@ import type { ListingEvaluation } from "@/domain/evaluation";
 import type { MarketSignal } from "@/domain/market";
 import { makePassport } from "@/test/fixtures";
 import {
+  InMemoryEvidenceRepository,
   InMemoryMarketRepository,
   InMemoryProductRepository,
   InMemorySessionRepository,
@@ -182,5 +183,30 @@ describe("InMemorySessionRepository", () => {
     const loaded = await repository.get(session.id);
     expect(loaded?.askedFeatureKeys).toEqual(["weight"]);
     expect(loaded?.messages[0].content).toBe("What is the measured weight?");
+  });
+});
+
+describe("InMemoryEvidenceRepository", () => {
+  it("does not share mutable evidence state with callers", async () => {
+    const repository = new InMemoryEvidenceRepository();
+    const input = {
+      productId: "product-1",
+      featureKey: "weight",
+      originalName: null,
+      mediaType: "text/plain",
+      storagePath: null,
+      extractedText: "The shoe weighs 220 g.",
+      supported: true,
+      supportingExcerpt: "weighs 220 g",
+    };
+
+    const created = await repository.create(input);
+    created.extractedText = "Changed outside repository";
+    const firstRead = await repository.listForProduct("product-1");
+    firstRead[0].extractedText = "Also changed outside repository";
+
+    expect((await repository.listForProduct("product-1"))[0].extractedText).toBe(
+      "The shoe weighs 220 g.",
+    );
   });
 });
