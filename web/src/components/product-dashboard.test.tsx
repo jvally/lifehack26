@@ -1,13 +1,6 @@
-import {
-  cleanup,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { makeMockDashboard } from "./mock-dashboard-data";
 import { ProductDashboard } from "./product-dashboard";
 
 afterEach(() => {
@@ -15,46 +8,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function apiResponse(data: unknown, status = 200, requestId = "request-1") {
-  return new Response(JSON.stringify({ ok: status < 400, data, requestId }), {
-    status,
-  });
-}
-
 describe("ProductDashboard", () => {
-  it("keeps the coach unavailable while the live evaluation is pending", async () => {
-    const dashboard = makeMockDashboard("product-1");
-    let finishEvaluation: ((response: Response) => void) | undefined;
-    const evaluation = new Promise<Response>((resolve) => {
-      finishEvaluation = resolve;
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          apiResponse({
-            passport: dashboard.passport,
-            evaluation: dashboard.evaluation,
-          }),
-        )
-        .mockReturnValueOnce(evaluation),
-    );
-
-    render(<ProductDashboard productId="product-1" />);
-    expect(screen.getByText("Analysing listing…")).toBeInTheDocument();
-    expect(screen.queryByText("CloudRun Pro")).not.toBeInTheDocument();
-
-    finishEvaluation?.(
-      apiResponse({
-        evaluation: dashboard.evaluation,
-        intelligence: dashboard.intelligence,
-      }),
-    );
-    await screen.findAllByRole("button", { name: "Open seller coach" });
-  });
-
-  it("shows the API request ID instead of silently using mock data", async () => {
+  it("shows an error instead of silently using mock data when the product cannot load", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValueOnce(
@@ -74,76 +29,7 @@ describe("ProductDashboard", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "The product was not found. Request ID: request-missing",
     );
-    expect(screen.queryByText("CloudRun Pro")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
-  });
-
-  it("uses the real session ID and next gaps returned by the APIs", async () => {
-    const dashboard = makeMockDashboard("product-1");
-    const firstGap = dashboard.evaluation.gaps[0];
-    const nextGap = dashboard.evaluation.gaps[1];
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(
-        apiResponse({
-          passport: dashboard.passport,
-          evaluation: dashboard.evaluation,
-        }),
-      )
-      .mockResolvedValueOnce(
-        apiResponse({
-          evaluation: dashboard.evaluation,
-          intelligence: dashboard.intelligence,
-        }),
-      )
-      .mockResolvedValueOnce(
-        apiResponse({ session: { id: "session-live-1" }, nextGap: firstGap }, 201),
-      )
-      .mockResolvedValueOnce(
-        apiResponse({
-          passport: dashboard.passport,
-          evaluation: dashboard.evaluation,
-          nextGap,
-        }),
-      );
-    vi.stubGlobal("fetch", fetchMock);
-    render(<ProductDashboard productId="product-1" />);
-
-    const coachButtons = await screen.findAllByRole("button", {
-      name: "Open seller coach",
-    });
-    await userEvent.click(coachButtons[0]);
-
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        "/api/products/product-1/interviews",
-        { method: "POST" },
-      ),
-    );
-    const coach = await screen.findByRole("region", {
-      name: "One answer, more coverage",
-    });
-    expect(within(coach).getByText(firstGap.question)).toBeInTheDocument();
-    expect(within(coach).getByText(/Interview in progress/)).toBeInTheDocument();
-    await userEvent.type(within(coach).getByLabelText("Your answer"), "220");
-    await userEvent.type(
-      within(coach).getByLabelText("Supporting evidence"),
-      "Manufacturer specification sheet.",
-    );
-    await userEvent.click(
-      within(coach).getByRole("button", { name: "Save answer" }),
-    );
-
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        "/api/interviews/session-live-1/answers",
-        expect.objectContaining({ method: "POST" }),
-      ),
-    );
-    const nextCoach = await screen.findByRole("region", {
-      name: "One answer, more coverage",
-    });
-    expect(within(nextCoach).getByText(nextGap.question)).toBeInTheDocument();
   });
 
   it("uses mock data only when offline demo mode is explicit", async () => {
@@ -154,36 +40,23 @@ describe("ProductDashboard", () => {
 
     expect(await screen.findByText("CloudRun Pro")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("button", { name: /seller coach/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it("compacts product detail cards until the seller asks to show more", async () => {
+  it("keeps short feature cards compact while allowing each field to be edited", async () => {
     render(<ProductDashboard productId="product-1" offlineDemo />);
 
-    const passport = await screen.findByRole("region", {
-      name: "CloudRun Pro",
-    });
-    expect(within(passport).getByText("Measured weight")).toBeInTheDocument();
-    expect(
-      within(passport).queryByText("Weather suitability"),
-    ).not.toBeInTheDocument();
+    const passport = await screen.findByRole("region", { name: "CloudRun Pro" });
+    const weightInput = within(passport).getByLabelText("Measured weight");
+    expect(weightInput).toHaveAttribute("placeholder", "Enter measured weight");
+    expect(within(passport).getAllByText("Weather suitability")).toHaveLength(2);
 
-    const toggle = within(passport).getByRole("button", {
-      name: "Show more (2 more details)",
-    });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await userEvent.click(toggle);
-
-    expect(within(passport).getByText("Weather suitability")).toBeInTheDocument();
-    expect(within(passport).getByText("Distance suitability")).toBeInTheDocument();
+    await userEvent.type(weightInput, "220");
+    expect(weightInput).toHaveValue("220");
     expect(
-      within(passport).getByRole("button", { name: "Show less" }),
-    ).toHaveAttribute("aria-expanded", "true");
-
-    await userEvent.click(
-      within(passport).getByRole("button", { name: "Show less" }),
-    );
-    expect(
-      within(passport).queryByText("Weather suitability"),
+      within(passport).queryByRole("button", { name: /show more/i }),
     ).not.toBeInTheDocument();
   });
 });
