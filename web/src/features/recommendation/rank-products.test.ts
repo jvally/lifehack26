@@ -3,6 +3,168 @@ import { makePassport } from "@/test/fixtures";
 import { rankProducts } from "./rank-products";
 
 describe("rankProducts", () => {
+  it("ranks an eligible road shoe above a semantically similar trail shoe and over-budget shoe", () => {
+    const result = rankProducts(
+      "Road shoes under S$200",
+      {
+        category: "running_shoes",
+        goal: "road_running",
+        hardConstraints: { terrain: "road", price_max: 200 },
+        preferences: [],
+        contexts: [],
+      },
+      [
+        {
+          passport: makePassport({
+            productId: "trail-shoe",
+            name: "Trail shoe",
+            price: 159,
+            features: [
+              {
+                key: "terrain",
+                label: "Terrain",
+                value: "trail",
+                unit: null,
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["trail-terrain"],
+              },
+            ],
+          }),
+          similarity: 0.99,
+        },
+        {
+          passport: makePassport({
+            productId: "premium-road",
+            name: "Premium road shoe",
+            price: 249,
+            features: [
+              {
+                key: "terrain",
+                label: "Terrain",
+                value: "road",
+                unit: null,
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["premium-terrain"],
+              },
+            ],
+          }),
+          similarity: 0.98,
+        },
+        {
+          passport: makePassport({
+            productId: "road-shoe",
+            name: "Road shoe",
+            price: 179,
+            features: [
+              {
+                key: "terrain",
+                label: "Terrain",
+                value: "road",
+                unit: null,
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["road-terrain"],
+              },
+            ],
+          }),
+          similarity: 0.8,
+        },
+      ],
+    );
+
+    expect(result.candidates.find((candidate) => candidate.productId === "road-shoe")).toMatchObject({
+      eligible: true,
+      rank: 1,
+    });
+    expect(result.candidates.find((candidate) => candidate.productId === "trail-shoe")).toMatchObject({
+      eligible: false,
+      rank: null,
+      failedConstraints: ["terrain"],
+    });
+    expect(result.candidates.find((candidate) => candidate.productId === "premium-road")).toMatchObject({
+      eligible: false,
+      rank: null,
+      failedConstraints: ["price_max"],
+    });
+  });
+
+  it("prefers verified evidence over an otherwise similar candidate with missing facts", () => {
+    const result = rankProducts(
+      "Lightweight breathable road shoes",
+      {
+        category: "running_shoes",
+        goal: "road_running",
+        hardConstraints: { terrain: "road" },
+        preferences: ["lightweight", "breathable"],
+        contexts: [],
+      },
+      [
+        {
+          passport: makePassport({
+            productId: "missing-facts",
+            name: "Unverified road shoe",
+            features: [
+              {
+                key: "terrain",
+                label: "Terrain",
+                value: "road",
+                unit: null,
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["terrain"],
+              },
+            ],
+          }),
+          similarity: 0.99,
+        },
+        {
+          passport: makePassport({
+            productId: "verified-facts",
+            name: "Verified road shoe",
+            features: [
+              {
+                key: "terrain",
+                label: "Terrain",
+                value: "road",
+                unit: null,
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["terrain"],
+              },
+              {
+                key: "weight",
+                label: "Weight",
+                value: 210,
+                unit: "g",
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["weight"],
+              },
+              {
+                key: "breathability",
+                label: "Breathability",
+                value: "high",
+                unit: null,
+                status: "verified",
+                confidence: 1,
+                evidenceIds: ["breathability"],
+              },
+            ],
+          }),
+          similarity: 0.8,
+        },
+      ],
+    );
+
+    expect(result.candidates.find((candidate) => candidate.rank === 1)).toMatchObject({
+      productId: "verified-facts",
+      rank: 1,
+      eligible: true,
+    });
+  });
+
   it("accepts a hard constraint when an array feature contains the requested value", () => {
     const result = rankProducts(
       "Road shoes",

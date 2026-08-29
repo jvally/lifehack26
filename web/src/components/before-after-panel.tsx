@@ -10,11 +10,18 @@ import type { AttributionEvent } from "@/domain/attribution";
 function Result({
   title,
   result,
+  targetProductId,
 }: {
   title: string;
   result: RecommendationResult;
+  targetProductId: string;
 }) {
-  const candidate = result.candidates[0];
+  const candidate = result.candidates.find(
+    (item) => item.productId === targetProductId,
+  );
+  const rankedCandidates = result.candidates
+    .filter((item) => item.rank !== null)
+    .sort((left, right) => (left.rank ?? Infinity) - (right.rank ?? Infinity));
   return (
     <article className="rounded-xl border border-[var(--border)] bg-[var(--canvas)] p-5">
       <div className="flex items-center justify-between gap-3">
@@ -23,6 +30,9 @@ function Result({
       </div>
       <p className="mt-5 text-3xl font-bold tracking-tight text-[var(--ink)]">
         {candidate?.eligible ? "Eligible" : "Insufficient evidence"}
+      </p>
+      <p className="mt-2 text-sm text-[var(--muted)]">
+        Target product: {candidate?.productName ?? targetProductId}
       </p>
       <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
         <div>
@@ -46,6 +56,23 @@ function Result({
             ) || "None"
           : "No product result"}
       </p>
+      <div className="mt-5 border-t border-[var(--border)] pt-4">
+        <p className="text-sm font-semibold">Ranked candidates</p>
+        <ol className="mt-2 space-y-2 text-sm text-[var(--muted)]">
+          {rankedCandidates.length === 0 ? (
+            <li>No eligible candidates</li>
+          ) : (
+            rankedCandidates.slice(0, 5).map((item) => (
+              <li
+                key={item.productId}
+                className={item.productId === targetProductId ? "font-semibold text-[var(--ink)]" : undefined}
+              >
+                {item.rank}. {item.productName} · {item.fitScore}
+              </li>
+            ))
+          )}
+        </ol>
+      </div>
     </article>
   );
 }
@@ -65,6 +92,7 @@ export function BeforeAfterPanel({
     "I am training for a half marathon in Singapore's humid weather and need lightweight road shoes under S$200.",
   );
   const [results, setResults] = useState<{
+    targetProductId: string;
     before: RecommendationResult;
     after: RecommendationResult;
   } | null>(null);
@@ -80,6 +108,7 @@ export function BeforeAfterPanel({
     try {
       if (offlineDemo) {
         setResults({
+          targetProductId: productId,
           before: makeMockRecommendation(query, false),
           after: makeMockRecommendation(query, approved),
         });
@@ -93,16 +122,21 @@ export function BeforeAfterPanel({
         body: JSON.stringify({ query, profileId }),
       });
       const data = await readApiData<{
+        targetProductId?: string;
         before?: RecommendationResult;
         after?: RecommendationResult;
         attribution?: AttributionEvent;
       }>(response, "We could not run this comparison.");
-      if (!data.before || !data.after) {
+      if (!data.targetProductId || !data.before || !data.after) {
         throw new ClientApiError(
           "The comparison response was missing required data.",
         );
       }
-      setResults({ before: data.before, after: data.after });
+      setResults({
+        targetProductId: data.targetProductId,
+        before: data.before,
+        after: data.after,
+      });
       onCompared?.(data.attribution ?? null);
     } catch (reason) {
       setError(
@@ -165,8 +199,16 @@ export function BeforeAfterPanel({
       )}
       {results && (
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <Result title="Before" result={results.before} />
-          <Result title="After" result={results.after} />
+          <Result
+            title="Before"
+            result={results.before}
+            targetProductId={results.targetProductId}
+          />
+          <Result
+            title="After"
+            result={results.after}
+            targetProductId={results.targetProductId}
+          />
         </div>
       )}
     </section>

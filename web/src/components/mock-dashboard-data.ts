@@ -62,7 +62,7 @@ export function makeMockRecommendation(query: string, improved: boolean): Recomm
   return {
     query,
     intent: { category: "running_shoes", goal: "Half-marathon training", hardConstraints: { price: 200, terrain: "road" }, preferences: ["lightweight", "breathable"], contexts: ["humid weather"] },
-    candidates: [{ productId: "cloudrun-pro", eligible: improved, rank: improved ? 2 : null, fitScore: improved ? 82 : 24, matchedFacts: improved ? ["Road terrain", "220 g weight", "S$179 price"] : ["S$179 price"], failedConstraints: improved ? [] : ["Road terrain is unknown"], missingEvidence: improved ? [] : ["Measured weight", "Humid-weather suitability"] }],
+    candidates: [{ productId: "cloudrun-pro", productName: "CloudRun Pro", eligible: improved, rank: improved ? 1 : null, fitScore: improved ? 82 : 24, matchedFacts: improved ? ["Road terrain", "220 g weight", "S$179 price"] : ["S$179 price"], failedConstraints: improved ? [] : ["Road terrain is unknown"], missingEvidence: improved ? [] : ["Measured weight", "Humid-weather suitability"] }],
     scoringVersion: "1.0.0",
   };
 }

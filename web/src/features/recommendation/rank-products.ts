@@ -183,6 +183,7 @@ export function rankProducts(
       );
       return {
         productId: passport.productId,
+        productName: passport.name,
         eligible:
           failedConstraints.length === 0 && missingEvidence.length === 0,
         rank: null,

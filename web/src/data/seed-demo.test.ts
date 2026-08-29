@@ -133,6 +133,30 @@ describe("seedDemoData", () => {
     expect(data.products[0]?.category).toBe("running_shoes");
   });
 
+  it("keeps running-shoe signal keys and product facts aligned with the ontology", async () => {
+    const data = await loadDemoSeedData();
+    const runningKeys = new Set(
+      data.featureDefinitions.map((definition) => definition.key),
+    );
+    const runningSignals = data.marketSignals.filter(
+      (signal) => signal.category === "running_shoes",
+    );
+
+    expect(
+      runningSignals.every((signal) =>
+        signal.featureKeys.every((key) => runningKeys.has(key)),
+      ),
+    ).toBe(true);
+    expect(
+      data.products
+        .filter(
+          (product) =>
+            product.category === "running_shoes" && product.id !== "cloudrun-pro",
+        )
+        .every((product) => /terrain:/i.test(product.description)),
+    ).toBe(true);
+  });
+
   it("is idempotent and preserves the weak CloudRun Pro passport", async () => {
     const store = new FakeSeedStore();
     const signals = new Map<string, MarketSignal>();

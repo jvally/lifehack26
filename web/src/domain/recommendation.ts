@@ -3,6 +3,7 @@ import { QueryIntentSchema } from "./market";
 
 export const RecommendationCandidateSchema = z.object({
   productId: z.string(),
+  productName: z.string().min(1),
   eligible: z.boolean(),
   rank: z.number().int().positive().nullable(),
   fitScore: z.number().min(0).max(100),

@@ -13,7 +13,7 @@
   {"id":"rain","query":"Running shoes for rainy Singapore mornings","frequency":19,"featureKeys":["weather_suitability","upper_material"]},
   {"id":"half-marathon","query":"Best shoes for a first half marathon","frequency":18,"featureKeys":["distance_suitability","cushioning"]},
   {"id":"road-grip","query":"Road shoes with dependable grip","frequency":17,"featureKeys":["terrain","upper_material"]},
-  {"id":"commute","query":"One shoe for commuting and running","frequency":16,"featureKeys":["use_cases","cushioning"]},
+  {"id":"commute","query":"One shoe for commuting and running","frequency":16,"featureKeys":["distance_suitability","cushioning"]},
   {"id":"premium","query":"Premium lightweight running shoes","frequency":15,"featureKeys":["weight","upper_material"]},
   {"id":"beginner","query":"Supportive shoes for beginner runners","frequency":14,"featureKeys":["stability","cushioning"]},
   {"id":"long-run","query":"Breathable shoes for long weekend runs","frequency":13,"featureKeys":["breathability","distance_suitability"]},

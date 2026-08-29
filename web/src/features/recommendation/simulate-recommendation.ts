@@ -66,5 +66,12 @@ export async function simulateRecommendation(
     referralToken: crypto.randomUUID(),
     query,
   });
-  return { intent, before, after, profile, attribution };
+  return {
+    targetProductId: productId,
+    intent,
+    before,
+    after,
+    profile,
+    attribution,
+  };
 }
