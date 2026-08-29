@@ -124,12 +124,17 @@ export function CatalogueProductDetail({ productId }: { productId: string }) {
       )}
 
       {!loading && !error && product && (
-        <div className="space-y-8">
+        (() => {
+          const priceFeature = product.features.find((feature) => feature.key === "price");
+          const featurePrice = typeof priceFeature?.value === "number" ? priceFeature.value : null;
+          const price = product.price ?? featurePrice;
+          const currency = product.price === null && priceFeature?.unit ? priceFeature.unit : product.currency;
+          return <div className="space-y-8">
           <section className="surface-card p-6 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <span className="eyebrow">{formatCategory(product.category)}</span>
               <span className="mono-label text-lg font-bold text-[var(--ink)]">
-                {formatPrice(product.price, product.currency)}
+                {formatPrice(price, currency)}
               </span>
             </div>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--ink)] sm:text-4xl">
@@ -173,7 +178,8 @@ export function CatalogueProductDetail({ productId }: { productId: string }) {
               </div>
             )}
           </section>
-        </div>
+          </div>;
+        })()
       )}
     </main>
   );

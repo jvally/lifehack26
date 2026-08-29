@@ -20,14 +20,20 @@ describe("CatalogueProductDetail", () => {
               name: "CloudRun Pro",
               category: "running_shoes",
               description: "A lightweight and comfortable running shoe.",
-              price: 179,
-              currency: "SGD",
+              price: null,
+              currency: "USD",
               features: [
                 {
                   key: "weight",
                   label: "Measured weight",
                   value: 220,
                   unit: "g",
+                },
+                {
+                  key: "price",
+                  label: "Price",
+                  value: 70,
+                  unit: "USD",
                 },
                 {
                   key: "drop",
@@ -48,7 +54,7 @@ describe("CatalogueProductDetail", () => {
 
     expect(await screen.findByRole("heading", { name: "CloudRun Pro" })).toBeInTheDocument();
     expect(screen.getByText("A lightweight and comfortable running shoe.")).toBeInTheDocument();
-    expect(screen.getByText("SGD $179")).toBeInTheDocument();
+    expect(screen.getByText("USD $70")).toBeInTheDocument();
     expect(screen.getByText("Running Shoes")).toBeInTheDocument();
 
     expect(screen.getByText("Measured weight")).toBeInTheDocument();
