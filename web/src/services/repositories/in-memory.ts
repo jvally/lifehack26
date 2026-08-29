@@ -74,6 +74,13 @@ export class InMemoryProductRepository implements ProductRepository {
     return record ? clone(record) : null;
   }
 
+  async list(limit = 100): Promise<ProductRecord[]> {
+    return [...this.products.values()]
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      .slice(0, limit)
+      .map(clone);
+  }
+
   async listByCategory(category: string): Promise<ProductRecord[]> {
     return [...this.products.values()]
       .filter((product) => product.category === category)

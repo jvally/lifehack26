@@ -2,6 +2,7 @@ import type { ListingEvaluation } from "@/domain/evaluation";
 import type { CategoryIntelligence, FeatureDefinition } from "@/domain/market";
 import type { ProductPassport } from "@/domain/passport";
 import type { RecommendationResult } from "@/domain/recommendation";
+import { evaluateListing } from "@/features/evaluation/evaluate-listing";
 
 export type DashboardData = {
   passport: ProductPassport;
@@ -19,8 +20,7 @@ export const runningShoeFeatures: FeatureDefinition[] = [
 ];
 
 export function makeMockDashboard(productId: string): DashboardData {
-  return {
-    passport: {
+  const passport: ProductPassport = {
       productId,
       name: "CloudRun Pro",
       category: "running_shoes",
@@ -29,22 +29,20 @@ export function makeMockDashboard(productId: string): DashboardData {
       currency: "SGD",
       features: runningShoeFeatures.map((feature) => ({ key: feature.key, label: feature.label, value: null, unit: feature.unit, status: "missing", confidence: 0, evidenceIds: [] })),
       useCases: ["Everyday running"], suitableContexts: [], limitations: [], updatedAt: "2026-08-29T00:00:00.000Z",
-    },
-    intelligence: {
+    };
+  const intelligence: CategoryIntelligence = {
       category: "running_shoes", features: runningShoeFeatures,
       intents: [{ id: "humid-half-marathon", label: "Humid-weather half-marathon training", weight: 38, requiredFeatures: ["weight", "terrain"], preferredFeatures: ["breathability", "weather_suitability", "distance_suitability"] }],
       peerMedians: { weight: 245 }, peerPriceMedian: 189,
-    },
-    evaluation: {
-      readiness: { completeness: 20, intentCoverage: 5, evidenceQuality: 12, discoverability: 30, consistency: 100, total: 29 },
-      competitiveness: { peerFeatureCoverage: 20, differentiation: 35, relativeSpecifications: 10, priceFit: 72, highDemandQueryCoverage: 5, total: 28 },
-      gaps: [
-        { featureKey: "weight", label: "Measured weight", reason: "missing", priority: 93, question: "What is the measured weight per shoe and reference size?", evidenceRequested: true },
-        { featureKey: "terrain", label: "Terrain", reason: "missing", priority: 86, question: "Which terrain is CloudRun Pro designed for?", evidenceRequested: false },
-        { featureKey: "breathability", label: "Breathability", reason: "evidence_required", priority: 78, question: "Can you confirm its breathability and provide supporting evidence?", evidenceRequested: true },
-      ],
-      coveredIntentIds: [], generatedAt: "2026-08-29T00:00:00.000Z", scoringVersion: "1.0.0",
-    },
+    };
+  return {
+    passport,
+    intelligence,
+    evaluation: evaluateListing(
+      passport,
+      intelligence,
+      new Date("2026-08-29T00:00:00.000Z"),
+    ),
     sessionId: null,
   };
 }

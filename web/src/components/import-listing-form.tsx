@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import { readApiData } from "@/lib/client-api";
+import { createMockBrandProduct } from "@/lib/mock-brand-database";
 
 type Format = "text" | "json" | "csv";
 type Stage = "idle" | "importing" | "extracting";
 
 export function ImportListingForm({
   onImported,
+  offlineDemo = process.env.NEXT_PUBLIC_OFFLINE_DEMO === "true",
 }: {
   onImported: (productId: string) => void;
+  offlineDemo?: boolean;
 }) {
   const [format, setFormat] = useState<Format>("text");
   const [content, setContent] = useState("");
@@ -27,6 +30,13 @@ export function ImportListingForm({
     setStage("importing");
 
     try {
+      if (offlineDemo) {
+        const product = createMockBrandProduct(format, content.trim());
+        setStage("extracting");
+        onImported(product.id);
+        return;
+      }
+
       const imported = await fetch("/api/products", {
         method: "POST",
         headers: { "content-type": "application/json" },

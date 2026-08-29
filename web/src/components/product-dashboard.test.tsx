@@ -41,8 +41,8 @@ describe("ProductDashboard", () => {
     expect(await screen.findByText("CloudRun Pro")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(
-      screen.queryByRole("button", { name: /seller coach/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: "Open seller coach" }),
+    ).toBeInTheDocument();
   });
 
   it("keeps short feature cards compact while allowing each field to be edited", async () => {

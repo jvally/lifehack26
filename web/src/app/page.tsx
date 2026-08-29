@@ -10,18 +10,21 @@ export default function Home() {
         RET-AI-L Ready
       </h1>
       <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--muted)] sm:text-xl">
-        Give every product the evidence it needs to answer an AI shopper with confidence.
+        Give every product the evidence it needs to answer an AI shopper with confidence. Buyers browse verified products in the public catalogue, while sellers use RetailReady to improve product data and close evidence gaps.
       </p>
-      <div className="mt-10 flex flex-wrap items-center gap-5">
+      <div className="mt-10 flex flex-wrap items-center gap-4">
         <Link
           className="button-primary inline-flex min-h-12 items-center px-6 py-3 font-semibold"
+          href="/catalog"
+        >
+          Browse catalogue
+        </Link>
+        <Link
+          className="button-secondary inline-flex min-h-12 items-center px-6 py-3 font-semibold"
           href="/products/new"
         >
-          Analyse a listing
+          Use RetailReady
         </Link>
-        <span className="mono-label text-[var(--muted)]">
-          Product truth → agent-ready recommendations
-        </span>
       </div>
       <div className="mt-20 grid max-w-4xl gap-px overflow-hidden rounded-2xl border border-[var(--ink)] bg-[var(--ink)] sm:grid-cols-3">
         {[

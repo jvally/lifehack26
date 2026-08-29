@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RET-AI-L Ready",
+  title: "RetailReady",
   description: "Evidence-backed product intelligence for agentic commerce",
 };
 
@@ -20,12 +20,28 @@ export default function RootLayout({
         </a>
         <header className="site-header">
           <div className="site-header-inner">
-            <Link className="brand-mark" href="/">
-              AgentReady Coach
-            </Link>
-            <span className="brand-meta">
-              Evidence-first commerce intelligence
-            </span>
+            <div className="flex items-center gap-4">
+              <Link className="brand-mark" href="/">
+                RetailReady
+              </Link>
+              <span className="brand-meta">
+                Evidence-first commerce intelligence
+              </span>
+            </div>
+            <nav aria-label="Main navigation" className="flex items-center gap-6">
+              <Link
+                className="text-sm font-semibold text-[var(--ink)] hover:text-[var(--primary-strong)]"
+                href="/catalog"
+              >
+                Catalogue
+              </Link>
+              <Link
+                className="text-sm font-semibold text-[var(--ink)] hover:text-[var(--primary-strong)]"
+                href="/products/new"
+              >
+                RetailReady
+              </Link>
+            </nav>
           </div>
         </header>
         {children}
