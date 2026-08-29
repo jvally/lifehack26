@@ -45,12 +45,12 @@ function SellerChatForm({
 
   if (!gap) {
     return (
-      <section className="surface-card bg-slate-950 p-5 text-white">
-        <p className="text-xs font-bold uppercase tracking-widest text-blue-300">
+      <section className="surface-card dark-surface p-5 sm:p-6">
+        <p className="eyebrow text-white/65">
           Seller coach
         </p>
-        <h2 className="mt-1 text-xl font-semibold">Your listing is ready</h2>
-        <p className="mt-2 text-sm text-slate-300">
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">Your listing is ready</h2>
+        <p className="mt-3 text-sm text-white/70">
           No further high-impact questions remain.
         </p>
       </section>
@@ -101,7 +101,7 @@ function SellerChatForm({
         aria-label="Your answer"
         value={answer}
         onChange={(event) => setAnswer(event.target.value)}
-        className="mt-2 w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-900"
+        className="mt-2 w-full rounded-lg border border-white/30 bg-white/8 p-3 text-white"
       >
         <option value="">Choose an answer</option>
         <option value="true">Yes</option>
@@ -113,7 +113,7 @@ function SellerChatForm({
         value={answer}
         onChange={(event) => setAnswer(event.target.value)}
         type={definition?.dataType === "number" ? "number" : "text"}
-        className="mt-2 w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-900"
+        className="mt-2 w-full rounded-lg border border-white/30 bg-white/8 p-3 text-white"
         placeholder={
           definition?.dataType === "number" ? "Enter a number" : "Type your answer"
         }
@@ -122,20 +122,20 @@ function SellerChatForm({
 
   return (
     <section
-      className="surface-card bg-[var(--navy)] p-5 text-white"
+      className="surface-card dark-surface p-5 sm:p-6"
       aria-labelledby="coach-heading"
     >
-      <p className="text-xs font-bold uppercase tracking-widest text-blue-300">
+      <p className="eyebrow text-white/65">
         Evidence-first seller coach
       </p>
-      <h2 id="coach-heading" className="mt-1 text-xl font-semibold">
+      <h2 id="coach-heading" className="mt-2 text-2xl font-semibold tracking-tight">
         One answer, more coverage
       </h2>
-      <p className="mt-4 text-sm leading-6 text-slate-200">{gap.question}</p>
-      <p className="mt-2 text-xs text-blue-200">
+      <p className="mt-5 text-sm leading-6 text-white/80">{gap.question}</p>
+      <p className="mono-label mt-3 text-white/60">
         Priority {Math.round(gap.priority)} · {sessionId ? "Interview in progress" : "Offline demo session"}
       </p>
-      <label className="mt-5 block text-sm font-semibold">
+      <label className="mt-6 block text-sm font-semibold">
         Your answer
         {control}
       </label>
@@ -146,7 +146,7 @@ function SellerChatForm({
             aria-label="Unit"
             value={unit}
             onChange={(event) => setUnit(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-900"
+            className="mt-2 w-full rounded-lg border border-white/30 bg-white/8 p-3 text-white"
           />
         </label>
       )}
@@ -157,13 +157,13 @@ function SellerChatForm({
             aria-label="Supporting evidence"
             value={evidence}
             onChange={(event) => setEvidence(event.target.value)}
-            className="mt-2 min-h-20 w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-900"
+            className="mt-2 min-h-20 w-full rounded-lg border border-white/30 bg-white/8 p-3 text-white"
             placeholder="Paste a specification, test result, or source note"
           />
         </label>
       )}
       {error && (
-        <p role="alert" className="mt-3 text-sm text-red-200">
+        <p role="alert" className="mt-3 text-sm text-[#ffb4a8]">
           {error}
         </p>
       )}
@@ -172,7 +172,7 @@ function SellerChatForm({
           type="button"
           disabled={submitting}
           onClick={() => void submit()}
-          className="rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 font-semibold disabled:opacity-60"
+          className="min-h-11 rounded-lg bg-white px-4 py-2 font-semibold text-[var(--ink)] transition-opacity duration-100 hover:opacity-85 disabled:opacity-50"
         >
           {submitting ? "Saving…" : "Save answer"}
         </button>
@@ -180,7 +180,7 @@ function SellerChatForm({
           type="button"
           disabled={submitting}
           onClick={() => void submit(true)}
-          className="rounded-lg border border-slate-500 px-4 py-2 font-semibold text-slate-100 disabled:opacity-60"
+          className="button-secondary min-h-11 border-white/50 px-4 py-2 font-semibold text-white hover:border-white hover:bg-white hover:text-[var(--ink)] disabled:opacity-50"
         >
           Unknown
         </button>

@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --canvas: #f7faff;
+  --canvas: #faf9f5;
   --surface: #ffffff;
-  --ink: #101828;
-  --muted: #475467;
-  --border: #d0d5dd;
-  --primary: #2563eb;
-  --primary-strong: #4f46e5;
-  --navy: #0b1535;
-  --verified: #16865a;
-  --missing: #d14545;
-  --inferred: #c27a10;
+  --ink: #141413;
+  --muted: #686761;
+  --border: #d8d6ce;
+  --primary: #141413;
+  --primary-strong: #2c2c29;
+  --navy: #141413;
+  --verified: #206b4d;
+  --missing: #a64034;
+  --inferred: #95651c;
+  --cream-dark: #f0eee7;
+  --focus: #141413;
 }
 
 * { box-sizing: border-box; }
@@ -20,28 +22,143 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Anthropic Sans", Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  letter-spacing: -0.015em;
+  line-height: 1.45;
 }
 
 button, input, textarea, select { font: inherit; }
 
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 40%, white);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+.dark-surface :focus-visible {
+  outline-color: white;
 }
 
 .surface-card {
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--surface);
-  box-shadow: 0 8px 24px rgb(37 99 235 / 7%);
+  box-shadow: 0 2px 2px rgb(0 0 0 / 1%), 0 4px 4px rgb(0 0 0 / 2%), 0 16px 24px rgb(0 0 0 / 4%);
 }
 
-.changed-feature { animation: feature-highlight 1.5s ease-out; }
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--canvas);
+}
+
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1280px;
+  min-height: 72px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.brand-mark {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.brand-meta {
+  color: var(--muted);
+  font-family: "Anthropic Mono", "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.dark-surface .eyebrow {
+  color: rgb(255 255 255 / 65%);
+}
+
+.mono-label {
+  font-family: "Anthropic Mono", "Courier New", monospace;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.dark-surface {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: white;
+}
+
+.dark-surface :is(input, textarea, select) {
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 8%);
+  color: white;
+}
+
+.dark-surface :is(input, textarea, select)::placeholder {
+  color: rgb(255 255 255 / 60%);
+}
+
+.button-primary {
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  background: var(--ink);
+  color: white;
+  transition: background-color 100ms cubic-bezier(0.16, 1, 0.3, 1), transform 100ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--primary-strong);
+  transform: translateY(-1px);
+}
+
+.button-secondary {
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  transition: background-color 100ms cubic-bezier(0.16, 1, 0.3, 1), color 100ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--ink);
+  color: white;
+}
+
+.dark-surface .button-secondary {
+  border-color: rgb(255 255 255 / 50%);
+  color: white;
+}
+
+.dark-surface .button-secondary:hover:not(:disabled) {
+  border-color: white;
+  background: white;
+  color: var(--ink);
+}
+
+.changed-feature { animation: feature-highlight 800ms cubic-bezier(0.16, 1, 0.3, 1); }
 
 @keyframes feature-highlight {
-  0%, 65% { box-shadow: 0 0 0 3px rgb(79 70 229 / 45%); }
+  0%, 65% { box-shadow: 0 0 0 3px rgb(20 20 19 / 20%); }
   100% { box-shadow: none; }
+}
+
+@media (max-width: 767px) {
+  .site-header-inner { min-height: 64px; padding: 0 16px; }
+  .brand-meta { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

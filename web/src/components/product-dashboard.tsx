@@ -279,15 +279,15 @@ export function ProductDashboard({
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <section
           role="status"
-          className="surface-card mx-auto max-w-2xl p-8 text-center"
+          className="surface-card mx-auto max-w-2xl border-[var(--ink)] p-8 text-center"
         >
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-700">
+          <p className="eyebrow">
             Product workspace
           </p>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-950">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--ink)]">
             Analysing listing…
           </h1>
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-[var(--muted)]">
             Building the Product Passport and recommendation readiness score.
           </p>
         </section>
@@ -298,19 +298,19 @@ export function ProductDashboard({
   if (releaseState === "error" || !dashboard) {
     return (
       <main id="main-content" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <section className="surface-card p-8">
-          <h1 className="text-2xl font-semibold text-slate-950">
+        <section className="surface-card border-[var(--ink)] p-8">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--ink)]">
             We could not open this product
           </h1>
           <p
             role="alert"
-            className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800"
+            className="mt-5 rounded-xl border border-[var(--missing)] bg-[#fff5f2] p-4 text-sm text-[var(--missing)]"
           >
             {apiError ?? "We could not load this product."}
           </p>
           <button
             onClick={() => setLoadAttempt((attempt) => attempt + 1)}
-            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white"
+            className="button-primary mt-5 min-h-11 px-4 py-2 font-semibold"
           >
             Retry
           </button>
@@ -332,7 +332,7 @@ export function ProductDashboard({
     <button
       onClick={() => void openCoach()}
       disabled={coachStarting}
-      className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
+      className="button-primary min-h-12 px-4 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
     >
       {coachLabel}
     </button>
@@ -342,17 +342,17 @@ export function ProductDashboard({
     <main id="main-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-700">
+          <p className="eyebrow">
             AgentReady Coach / Product workspace
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+          <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[var(--ink)] sm:text-5xl">
             Make product truth recommendation-ready
           </h1>
         </div>
         {coachButton}
       </header>
       {releaseState === "offline" && (
-        <p className="mb-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+        <p className="mb-5 rounded-xl border border-[#95651c] bg-[#fff9e8] p-4 text-sm text-[#765018]">
           Offline demo mode uses local sample data. Live API changes are not
           saved.
         </p>
@@ -360,7 +360,7 @@ export function ProductDashboard({
       {apiError && (
         <p
           role="alert"
-          className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
+          className="mb-5 rounded-xl border border-[var(--missing)] bg-[#fff5f2] p-4 text-sm text-[var(--missing)]"
         >
           {apiError}
         </p>
@@ -375,21 +375,21 @@ export function ProductDashboard({
               onUpdate={applyAnswer}
             />
           ) : (
-            <section className="surface-card bg-[var(--navy)] p-5 text-white">
-              <p className="text-xs font-bold uppercase tracking-widest text-blue-300">
+            <section className="surface-card dark-surface p-5 sm:p-6">
+              <p className="eyebrow text-white/65">
                 Guided optimisation
               </p>
-              <h2 className="mt-1 text-xl font-semibold">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
                 Let the coach find your next best answer
               </h2>
-              <p className="mt-3 text-sm text-slate-300">
+              <p className="mt-4 text-sm leading-6 text-white/70">
                 Prioritised questions connect missing product facts to real
                 shopper demand.
               </p>
               <button
                 onClick={() => void openCoach()}
                 disabled={coachStarting}
-                className="mt-4 rounded-lg bg-white px-4 py-2 font-semibold text-slate-950 disabled:opacity-60"
+                className="mt-5 min-h-11 rounded-lg bg-white px-4 py-2 font-semibold text-[var(--ink)] transition-opacity duration-100 hover:opacity-85 disabled:opacity-50"
               >
                 {coachLabel}
               </button>
