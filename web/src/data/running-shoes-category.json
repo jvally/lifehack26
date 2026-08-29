@@ -1,0 +1,75 @@
+{
+  "category": "running_shoes",
+  "features": [
+    {
+      "key": "weight",
+      "label": "Measured weight",
+      "dataType": "number",
+      "unit": "g",
+      "required": true,
+      "demandWeight": 0.9,
+      "constraintImportance": 0.85,
+      "competitiveCoverage": 0.8,
+      "competitiveDirection": "lower",
+      "answerability": 1,
+      "evidenceRequired": true,
+      "synonyms": ["lightweight", "grams", "shoe weight"]
+    },
+    {
+      "key": "breathability",
+      "label": "Breathability",
+      "dataType": "string",
+      "unit": null,
+      "required": false,
+      "demandWeight": 0.8,
+      "constraintImportance": 0.7,
+      "competitiveCoverage": 0.65,
+      "competitiveDirection": "neutral",
+      "answerability": 0.8,
+      "evidenceRequired": true,
+      "synonyms": ["ventilation", "airflow", "humid weather"]
+    },
+    {
+      "key": "heel_drop",
+      "label": "Heel-to-toe drop",
+      "dataType": "number",
+      "unit": "mm",
+      "required": false,
+      "demandWeight": 0.65,
+      "constraintImportance": 0.75,
+      "competitiveCoverage": 0.7,
+      "competitiveDirection": "neutral",
+      "answerability": 1,
+      "evidenceRequired": true,
+      "synonyms": ["drop", "offset", "heel toe differential"]
+    },
+    {
+      "key": "terrain",
+      "label": "Recommended terrain",
+      "dataType": "string_array",
+      "unit": null,
+      "required": true,
+      "demandWeight": 0.75,
+      "constraintImportance": 0.9,
+      "competitiveCoverage": 0.9,
+      "competitiveDirection": "neutral",
+      "answerability": 0.9,
+      "evidenceRequired": false,
+      "synonyms": ["road", "trail", "track", "surface"]
+    },
+    {
+      "key": "waterproof",
+      "label": "Waterproof construction",
+      "dataType": "boolean",
+      "unit": null,
+      "required": false,
+      "demandWeight": 0.45,
+      "constraintImportance": 0.8,
+      "competitiveCoverage": 0.5,
+      "competitiveDirection": "neutral",
+      "answerability": 1,
+      "evidenceRequired": true,
+      "synonyms": ["water resistant", "rain", "membrane"]
+    }
+  ]
+}
