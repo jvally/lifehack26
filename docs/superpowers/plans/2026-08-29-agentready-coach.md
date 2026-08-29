@@ -3986,15 +3986,16 @@ Expected: route tests, type-check, and lint pass.
 
 - [ ] **Step 1: Define the visual system**
 
-Use these UI decisions:
+Use a Rezolve-inspired enterprise AI-commerce visual language with these UI decisions:
 
-- Warm off-white background: #F7F5F2.
-- Near-black text: #18181B.
-- Primary violet: #6D4AFF.
+- Light blue-white canvas: #F7FAFF; white surfaces: #FFFFFF.
+- Navy text: #101828; muted text: #475467; cool-gray borders: #D0D5DD.
+- Primary blue: #2563EB; emphasis gradient: #2563EB to #4F46E5; dark-navy feature surface: #0B1535.
 - Verified green: #16865A.
 - Missing red: #D14545.
 - Inferred amber: #C27A10.
 - Rounded cards with 18 px radius.
+- Use outcome-led headings, compact uppercase labels, soft blue shadows, and visible keyboard focus rings.
 - Desktop dashboard uses a 5-column grid: chat spans 2 columns, passport spans 2 columns, scores span 1 column.
 - Mobile stacks chat, passport, then scores.
 - Use motion only through CSS transitions so the application has no animation runtime dependency.

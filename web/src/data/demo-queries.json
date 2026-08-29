@@ -1,0 +1,22 @@
+[
+  {"id":"humid-half-marathon","query":"I am training for a half marathon in Singapore's humid weather and need lightweight road shoes under S$200.","frequency":38,"featureKeys":["terrain","weight","breathability","weather_suitability","distance_suitability","price"]},
+  {"id":"daily-road","query":"Comfortable road shoes for daily 5 km runs","frequency":31,"featureKeys":["terrain","cushioning","price"]},
+  {"id":"wet-trails","query":"Water-resistant trail shoes with grip","frequency":28,"featureKeys":["terrain","weather_suitability"]},
+  {"id":"light-racer","query":"Lightweight shoes for a fast 10 km race","frequency":27,"featureKeys":["weight","distance_suitability"]},
+  {"id":"stable-run","query":"Stable running shoes for overpronation","frequency":26,"featureKeys":["stability"]},
+  {"id":"under-150","query":"Running shoes under S$150","frequency":25,"featureKeys":["price"]},
+  {"id":"marathon","query":"Cushioned shoes for marathon training","frequency":24,"featureKeys":["cushioning","distance_suitability"]},
+  {"id":"breathable","query":"Breathable shoes for hot weather","frequency":23,"featureKeys":["breathability","weather_suitability"]},
+  {"id":"eco","query":"Sustainable running shoes","frequency":22,"featureKeys":["sustainability_claims"]},
+  {"id":"wide-fit","query":"Road runners for wide feet","frequency":21,"featureKeys":["sizes"]},
+  {"id":"recovery","query":"Soft running shoes for recovery days","frequency":20,"featureKeys":["cushioning"]},
+  {"id":"rain","query":"Running shoes for rainy Singapore mornings","frequency":19,"featureKeys":["weather_suitability","upper_material"]},
+  {"id":"half-marathon","query":"Best shoes for a first half marathon","frequency":18,"featureKeys":["distance_suitability","cushioning"]},
+  {"id":"road-grip","query":"Road shoes with dependable grip","frequency":17,"featureKeys":["terrain","upper_material"]},
+  {"id":"commute","query":"One shoe for commuting and running","frequency":16,"featureKeys":["use_cases","cushioning"]},
+  {"id":"premium","query":"Premium lightweight running shoes","frequency":15,"featureKeys":["weight","upper_material"]},
+  {"id":"beginner","query":"Supportive shoes for beginner runners","frequency":14,"featureKeys":["stability","cushioning"]},
+  {"id":"long-run","query":"Breathable shoes for long weekend runs","frequency":13,"featureKeys":["breathability","distance_suitability"]},
+  {"id":"return-policy","query":"Running shoes with easy returns","frequency":12,"featureKeys":["return_policy"]},
+  {"id":"all-weather","query":"All-weather running shoes under S$200","frequency":11,"featureKeys":["price","weather_suitability"]}
+]
