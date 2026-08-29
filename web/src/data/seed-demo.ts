@@ -302,10 +302,17 @@ export async function loadDemoSeedData(
     sourceUrl: null,
     observedAt: "2026-08-29T00:00:00.000Z",
   }));
+  const storedSignals = MarketSignalSchema.array().parse(marketSignals);
+  const mergedSignals = new Map(
+    storedSignals.map((signal) => [signal.id, signal]),
+  );
+  for (const signal of querySignals) {
+    if (!mergedSignals.has(signal.id)) mergedSignals.set(signal.id, signal);
+  }
   return DemoSeedDataSchema.parse({
     products,
     queries: demoQueries,
-    marketSignals: [...querySignals, ...MarketSignalSchema.array().parse(marketSignals)],
+    marketSignals: [...mergedSignals.values()],
     featureDefinitions,
   });
 }
