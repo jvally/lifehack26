@@ -10,13 +10,13 @@ concurrency:
   group: cd-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  # Wait for CI to pass before deploying
-  ci:
-    uses: ./.github/workflows/ci.yml
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
+jobs:
   deploy:
-    needs: ci
     runs-on: ubuntu-latest
     defaults:
       run:
