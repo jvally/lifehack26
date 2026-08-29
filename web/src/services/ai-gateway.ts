@@ -2,7 +2,11 @@ import { zodTextFormat } from "openai/helpers/zod";
 import type OpenAI from "openai";
 import { z } from "zod";
 
-import { QueryIntentSchema, type QueryIntent } from "@/domain/market";
+import {
+  ConstraintValueSchema,
+  QueryIntentSchema,
+  type QueryIntent,
+} from "@/domain/market";
 import {
   ProductPassportSchema,
   type ProductPassport,
@@ -20,6 +24,18 @@ export const RawProductInputSchema = z.object({
 });
 
 export type RawProductInput = z.infer<typeof RawProductInputSchema>;
+
+// OpenAI strict structured outputs do not support arbitrary record keys. Keep
+// the wire format as key/value pairs, then normalize it to the domain record.
+const StructuredQueryIntentSchema = z.object({
+  category: z.string().min(1),
+  goal: z.string().nullable(),
+  hardConstraints: z.array(
+    z.object({ key: z.string().min(1), value: ConstraintValueSchema }),
+  ),
+  preferences: z.array(z.string()),
+  contexts: z.array(z.string()),
+});
 
 export const ProductPassportDraftSchema = ProductPassportSchema.omit({
   productId: true,
@@ -137,12 +153,23 @@ export class OpenAIAiGateway implements AiGateway {
           },
           { role: "user", content: query },
         ],
-        text: { format: zodTextFormat(QueryIntentSchema, "shopping_intent") },
+        text: {
+          format: zodTextFormat(
+            StructuredQueryIntentSchema,
+            "shopping_intent",
+          ),
+        },
       });
       if (!response.output_parsed) {
         throw new Error("AI_QUERY_PARSE_EMPTY");
       }
-      return QueryIntentSchema.parse(response.output_parsed);
+      const parsed = StructuredQueryIntentSchema.parse(response.output_parsed);
+      return QueryIntentSchema.parse({
+        ...parsed,
+        hardConstraints: Object.fromEntries(
+          parsed.hardConstraints.map(({ key, value }) => [key, value]),
+        ),
+      });
     }, this.attempts);
   }
 

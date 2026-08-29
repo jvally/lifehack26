@@ -100,6 +100,17 @@ export async function withApiErrors(
         requestId,
       );
     }
+    if (
+      error instanceof Error &&
+      /no credits remaining|billing|rate limit/i.test(error.message)
+    ) {
+      return apiFailure(
+        "AI_PROVIDER_UNAVAILABLE",
+        "The AI provider is unavailable. Check the OpenAI account credits and billing settings.",
+        503,
+        requestId,
+      );
+    }
     const issues = catalogIssues(error);
     if (issues !== undefined) {
       return apiFailure(
