@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { RecommendationResult } from "@/domain/recommendation";
 import { ClientApiError, readApiData } from "@/lib/client-api";
 import { makeMockRecommendation } from "./mock-dashboard-data";
+import { preferenceProfiles } from "@/domain/preference-profile";
+import type { AttributionEvent } from "@/domain/attribution";
 
 function Result({
   title,
@@ -51,9 +53,11 @@ function Result({
 export function BeforeAfterPanel({
   productId,
   offlineDemo,
+  onCompared,
 }: {
   productId: string;
   offlineDemo: boolean;
+  onCompared?: (attribution: AttributionEvent | null) => void;
 }) {
   const [query, setQuery] = useState(
     "I am training for a half marathon in Singapore's humid weather and need lightweight road shoes under S$200.",
@@ -64,6 +68,7 @@ export function BeforeAfterPanel({
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileId, setProfileId] = useState("balanced");
 
   const compare = async () => {
     setLoading(true);
@@ -76,17 +81,19 @@ export function BeforeAfterPanel({
           before: makeMockRecommendation(query, false),
           after: makeMockRecommendation(query, true),
         });
+        onCompared?.(null);
         return;
       }
 
       const response = await fetch(`/api/products/${productId}/simulate`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, profileId }),
       });
       const data = await readApiData<{
         before?: RecommendationResult;
         after?: RecommendationResult;
+        attribution?: AttributionEvent;
       }>(response, "We could not run this comparison.");
       if (!data.before || !data.after) {
         throw new ClientApiError(
@@ -94,6 +101,7 @@ export function BeforeAfterPanel({
         );
       }
       setResults({ before: data.before, after: data.after });
+      onCompared?.(data.attribution ?? null);
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -121,6 +129,21 @@ export function BeforeAfterPanel({
           onChange={(event) => setQuery(event.target.value)}
           className="mt-3 min-h-24 w-full rounded-lg border border-[var(--ink)] bg-[var(--canvas)] p-4 text-[var(--ink)] placeholder:text-[var(--muted)]"
         />
+      </label>
+      <label className="mt-3 block text-sm font-semibold">
+        Shopper preference profile
+        <select
+          aria-label="Shopper preference profile"
+          value={profileId}
+          onChange={(event) => setProfileId(event.target.value)}
+          className="mt-2 w-full rounded-lg border border-slate-300 bg-white p-3"
+        >
+          {preferenceProfiles.map((profile) => (
+            <option key={profile.id} value={profile.id}>
+              {profile.label} — {profile.description}
+            </option>
+          ))}
+        </select>
       </label>
       <button
         type="button"

@@ -5,6 +5,13 @@ import { pathToFileURL } from "node:url";
 
 export type PlaywrightMode = "offline" | "live";
 
+type PortProbe = {
+  unref(): void;
+  once(event: "error", listener: (reason: NodeJS.ErrnoException) => void): void;
+  listen(options: { host: string; port: number; exclusive: boolean }, listener: () => void): void;
+  close(listener: (reason?: Error) => void): void;
+};
+
 type EnvironmentSource = Record<string, string | undefined>;
 
 export function parsePlaywrightMode(value: string | undefined): PlaywrightMode {
@@ -36,12 +43,15 @@ export function createPlaywrightRunConfig(
   };
 }
 
-export async function assertLocalPortAvailable(baseURL: string) {
+export async function assertLocalPortAvailable(
+  baseURL: string,
+  createProbe: () => PortProbe = createServer,
+) {
   const url = new URL(baseURL);
   const port = Number(url.port || (url.protocol === "https:" ? "443" : "80"));
 
   await new Promise<void>((resolveAvailable, reject) => {
-    const probe = createServer();
+    const probe = createProbe();
     probe.unref();
     probe.once("error", (reason: NodeJS.ErrnoException) => {
       if (reason.code === "EADDRINUSE") {
@@ -50,7 +60,7 @@ export async function assertLocalPortAvailable(baseURL: string) {
         reject(reason);
       }
     });
-    probe.listen({ host: "0.0.0.0", port, exclusive: true }, () => {
+    probe.listen({ host: "127.0.0.1", port, exclusive: true }, () => {
       probe.close((reason) => {
         if (reason) reject(reason);
         else resolveAvailable();

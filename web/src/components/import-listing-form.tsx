@@ -70,7 +70,7 @@ export function ImportListingForm({
         Analyse a product listing
       </h1>
       <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--muted)] sm:text-lg">
-        Import the source listing. AgentReady Coach will identify the facts an
+        Import the source listing. RET-AI-L Ready will identify the facts an
         AI shopper still cannot verify.
       </p>
       <div

@@ -34,6 +34,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      attribution_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          product_id: string
+          query: string | null
+          referral_token: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          product_id: string
+          query?: string | null
+          referral_token: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          product_id?: string
+          query?: string | null
+          referral_token?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attribution_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string

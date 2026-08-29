@@ -3,6 +3,9 @@ import type { AiGateway } from "@/services/ai-gateway";
 import type { ProductRepository } from "@/services/repositories/contracts";
 import { getQueryArtifacts } from "./query-artifacts";
 import { rankProducts } from "./rank-products";
+import { getPreferenceProfile } from "@/domain/preference-profile";
+import type { AttributionRepository } from "@/services/repositories/contracts";
+import type { AttributionSource } from "@/domain/attribution";
 
 export async function simulateRecommendation(
   productId: string,
@@ -11,13 +14,23 @@ export async function simulateRecommendation(
     ai: AiGateway;
     embeddings: EmbeddingService;
     products: ProductRepository;
+    attribution: AttributionRepository;
   },
+  options: {
+    profileId?: string | null;
+    source?: AttributionSource;
+  } = {},
 ) {
   const target = await dependencies.products.get(productId);
   if (!target?.passport || !target.originalPassport) {
     throw new Error("SIMULATION_PRODUCT_NOT_READY");
   }
-  const { intent, embedding } = await getQueryArtifacts(query, dependencies);
+  const { intent: parsedIntent, embedding } = await getQueryArtifacts(query, dependencies);
+  const profile = getPreferenceProfile(options.profileId);
+  const intent = {
+    ...parsedIntent,
+    preferences: [...new Set([...parsedIntent.preferences, ...profile.preferences])],
+  };
   const semanticCandidates = await dependencies.products.searchByEmbedding(
     intent.category,
     embedding,
@@ -46,5 +59,12 @@ export async function simulateRecommendation(
     ...competitors,
     { passport: target.passport, similarity: targetSimilarity },
   ]);
-  return { intent, before, after };
+  const attribution = await dependencies.attribution.create({
+    productId,
+    source: options.source ?? "retail_ready_simulator",
+    eventType: "recommendation_served",
+    referralToken: crypto.randomUUID(),
+    query,
+  });
+  return { intent, before, after, profile, attribution };
 }

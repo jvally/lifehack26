@@ -7,7 +7,7 @@ export default function Home() {
         Evidence-first commerce intelligence
       </p>
       <h1 className="max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.04em] text-[var(--ink)] sm:text-7xl">
-        AgentReady Coach
+        RET-AI-L Ready
       </h1>
       <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--muted)] sm:text-xl">
         Give every product the evidence it needs to answer an AI shopper with confidence.

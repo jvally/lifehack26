@@ -12,6 +12,10 @@ import { ProductPassportPanel } from "./product-passport-panel";
 import { ImplementationPatch } from "./implementation-patch";
 import { ReadinessBreakdown } from "./readiness-breakdown";
 import { SellerChat, type SellerAnswer } from "./seller-chat";
+import { VisibilityTracker } from "./visibility-tracker";
+import { AttributionPanel } from "./attribution-panel";
+import { buildVisibilityReport } from "@/features/visibility/build-visibility-report";
+import type { AttributionEvent } from "@/domain/attribution";
 
 type DashboardData = ReturnType<typeof makeMockDashboard>;
 type ReleaseState = "loading" | "ready" | "offline" | "error";
@@ -43,6 +47,7 @@ export function ProductDashboard({
   const [changed, setChanged] = useState<string[]>([]);
   const [nextGap, setNextGap] = useState<Gap | null | undefined>(undefined);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [attribution, setAttribution] = useState<AttributionEvent | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -343,7 +348,7 @@ export function ProductDashboard({
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">
-            AgentReady Coach / Product workspace
+            RET-AI-L Ready / Product workspace
           </p>
           <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[var(--ink)] sm:text-5xl">
             Make product truth recommendation-ready
@@ -417,13 +422,22 @@ export function ProductDashboard({
         </div>
       </div>
       <div className="mt-5">
+        <VisibilityTracker
+          fallback={buildVisibilityReport(dashboard.evaluation, dashboard.intelligence, [])}
+        />
+      </div>
+      <div className="mt-5">
         <ImplementationPatch productId={productId} offlineDemo={releaseState === "offline"} />
       </div>
       <div className="mt-5">
         <BeforeAfterPanel
           productId={productId}
           offlineDemo={releaseState === "offline"}
+          onCompared={setAttribution}
         />
+      </div>
+      <div className="mt-5">
+        <AttributionPanel productId={productId} attribution={attribution} />
       </div>
     </main>
   );

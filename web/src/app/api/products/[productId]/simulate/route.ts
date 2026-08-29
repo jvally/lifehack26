@@ -5,7 +5,11 @@ import { getApplicationDependencies } from "@/services/container";
 
 const ParamsSchema = z.object({ productId: z.string().uuid() });
 const RequestSchema = z
-  .object({ query: z.string().trim().min(5).max(2000) })
+  .object({
+    query: z.string().trim().min(5).max(2000),
+    profileId: z.string().trim().max(80).optional(),
+    source: z.enum(["retail_ready_simulator", "chatgpt", "shopping_agent", "other"]).optional(),
+  })
   .strict();
 
 export async function POST(
@@ -14,13 +18,11 @@ export async function POST(
 ) {
   return withApiErrors(async () => {
     const { productId } = ParamsSchema.parse(await context.params);
-    const { query } = RequestSchema.parse(await request.json());
-    return apiSuccess(
-      await simulateRecommendation(
-        productId,
-        query,
-        getApplicationDependencies(),
-      ),
-    );
+    const { query, profileId, source } = RequestSchema.parse(await request.json());
+    const dependencies = getApplicationDependencies();
+    const result = profileId || source
+      ? await simulateRecommendation(productId, query, dependencies, { profileId, source })
+      : await simulateRecommendation(productId, query, dependencies);
+    return apiSuccess(result);
   });
 }

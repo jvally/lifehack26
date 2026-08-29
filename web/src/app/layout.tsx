@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AgentReady Coach",
+  title: "RET-AI-L Ready",
   description: "Evidence-backed product intelligence for agentic commerce",
 };
 

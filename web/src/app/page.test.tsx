@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 import Home from "./page";
 
 describe("Home", () => {
-  it("introduces AgentReady Coach", () => {
+  it("introduces RET-AI-L Ready", () => {
     render(<Home />);
 
     expect(
-      screen.getByRole("heading", { name: "AgentReady Coach" }),
+      screen.getByRole("heading", { name: "RET-AI-L Ready" }),
     ).toBeInTheDocument();
     expect(
       screen.getByText(

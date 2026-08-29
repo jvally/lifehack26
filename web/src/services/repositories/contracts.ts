@@ -1,6 +1,7 @@
 import type { ListingEvaluation } from "@/domain/evaluation";
 import type { MarketSignal } from "@/domain/market";
 import type { ProductPassport } from "@/domain/passport";
+import type { AttributionEvent, AttributionSource } from "@/domain/attribution";
 
 export type RawProductInput = {
   externalId: string | null;
@@ -94,4 +95,15 @@ export interface EvidenceRepository {
     input: Omit<EvidenceRecord, "id" | "createdAt">,
   ): Promise<EvidenceRecord>;
   listForProduct(productId: string): Promise<EvidenceRecord[]>;
+}
+
+export interface AttributionRepository {
+  create(input: {
+    productId: string;
+    source: AttributionSource;
+    eventType: AttributionEvent["eventType"];
+    referralToken: string;
+    query: string | null;
+  }): Promise<AttributionEvent>;
+  listForProduct(productId: string): Promise<AttributionEvent[]>;
 }

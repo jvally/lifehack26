@@ -5,6 +5,7 @@ import { SupabaseEvidenceRepository } from "./repositories/supabase-evidence-rep
 import { SupabaseMarketRepository } from "./repositories/supabase-market-repository";
 import { SupabaseProductRepository } from "./repositories/supabase-product-repository";
 import { SupabaseSessionRepository } from "./repositories/supabase-session-repository";
+import { SupabaseAttributionRepository } from "./repositories/supabase-attribution-repository";
 
 function createApplicationDependencies() {
   return {
@@ -14,6 +15,7 @@ function createApplicationDependencies() {
     market: new SupabaseMarketRepository(),
     sessions: new SupabaseSessionRepository(),
     evidence: new SupabaseEvidenceRepository(),
+    attribution: new SupabaseAttributionRepository(),
   };
 }
 

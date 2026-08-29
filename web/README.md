@@ -1,10 +1,10 @@
-# AgentReady Coach
+# RET-AI-L Ready
 
-AgentReady Coach turns an incomplete seller listing into an evidence-aware Product Passport, identifies what limits AI shopping recommendations, and guides the seller through the highest-impact answers. It supports running shoes, clothing, furniture, accessories, makeup, groceries, and sports equipment, with automatic category detection for listings and shopper prompts.
+RET-AI-L Ready turns an incomplete seller listing into an evidence-aware Product Passport, identifies what limits AI shopping recommendations, and guides the seller through the highest-impact answers. It supports running shoes, clothing, furniture, accessories, makeup, groceries, and sports equipment, with automatic category detection for listings and shopper prompts.
 
 ## Architecture
 
-Listing import → automatic category detection → Product Passport extraction → market context and deterministic evaluation → seller interview → before and after recommendation simulation. The dashboard exposes a weighted AI-recommendability matrix covering product facts, shopper intent, evidence, search language, and consistency.
+Listing import → automatic category detection → Product Passport extraction → market context and deterministic evaluation → seller interview → before and after recommendation simulation. The dashboard also tracks benchmark AI visibility, matches shopper preference profiles, and creates referral-token attribution events. It exposes a weighted AI-recommendability matrix covering product facts, shopper intent, evidence, search language, and consistency.
 
 The Next.js interface is separate from the deterministic domain engine. Product claims use one provenance state: `verified`, `seller_declared`, `ai_inferred`, or `missing`. Permitted competitor observations inform benchmarks only. They never become seller claims.
 

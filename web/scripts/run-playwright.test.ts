@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createServer } from "node:net";
+import { EventEmitter } from "node:events";
 import {
   assertLocalPortAvailable,
   createPlaywrightRunConfig,
@@ -46,25 +46,17 @@ describe("run-playwright configuration", () => {
   });
 
   it("rejects a local port already owned by another process", async () => {
-    const server = createServer();
-    await new Promise<void>((resolve, reject) => {
-      server.once("error", reject);
-      server.listen(0, "0.0.0.0", resolve);
+    const port = 43123;
+    const probe = Object.assign(new EventEmitter(), {
+      unref: () => undefined,
+      close: (listener: (reason?: Error) => void) => listener(),
+      listen: () => {
+        queueMicrotask(() => probe.emit("error", { code: "EADDRINUSE" }));
+      },
     });
-    const address = server.address();
-    if (!address || typeof address === "string") {
-      server.close();
-      throw new Error("The test server did not expose a TCP port.");
-    }
 
-    try {
-      await expect(
-        assertLocalPortAvailable(`http://127.0.0.1:${address.port}`),
-      ).rejects.toThrow(`Port ${address.port} is already in use.`);
-    } finally {
-      await new Promise<void>((resolve, reject) =>
-        server.close((error) => (error ? reject(error) : resolve())),
-      );
-    }
+    await expect(
+      assertLocalPortAvailable(`http://127.0.0.1:${port}`, () => probe),
+    ).rejects.toThrow(`Port ${port} is already in use.`);
   });
 });

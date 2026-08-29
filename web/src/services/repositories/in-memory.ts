@@ -1,6 +1,8 @@
 import type { MarketSignal } from "@/domain/market";
 import type { ProductPassport } from "@/domain/passport";
+import type { AttributionEvent } from "@/domain/attribution";
 import type {
+  AttributionRepository,
   EvidenceRecord,
   EvidenceRepository,
   InterviewMessage,
@@ -229,6 +231,27 @@ export class InMemoryEvidenceRepository implements EvidenceRepository {
     return [...this.records.values()]
       .filter((record) => record.productId === productId)
       .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+      .map(clone);
+  }
+}
+
+export class InMemoryAttributionRepository implements AttributionRepository {
+  private readonly records = new Map<string, AttributionEvent>();
+
+  async create(input: Omit<AttributionEvent, "id" | "createdAt">): Promise<AttributionEvent> {
+    const record: AttributionEvent = {
+      ...clone(input),
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    this.records.set(record.id, clone(record));
+    return clone(record);
+  }
+
+  async listForProduct(productId: string): Promise<AttributionEvent[]> {
+    return [...this.records.values()]
+      .filter((record) => record.productId === productId)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
       .map(clone);
   }
 }
