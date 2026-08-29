@@ -128,3 +128,8 @@ Deploy with `web` as the application root. Keep the Supabase service role key an
 ## Brand implementation pathway
 
 Seller-coach answers update the current Product Passport while preserving the original passport for comparison. The product workspace exposes an **Implementation patch** download after improvements are saved. The patch is a versioned JSON change set containing each field path, current value, proposed value, supporting evidence IDs, and reason for the recommendation. This is intentionally an adapter-neutral boundary: a brand can import it into a PIM, Shopify/commerce connector, ERP, or custom database without sharing database credentials. A future connector can consume the same patch after an explicit approval step and then re-run evaluation to show the measurable readiness lift.
+
+## Deferred TODOs
+
+- **Shopify integration:** add OAuth store connection, product import, approved implementation-patch sync through Shopify Admin GraphQL, and post-sync re-evaluation. Use scoped permissions and preserve an audit trail of every applied change.
+- Add a generic REST/webhook adapter for brands using a custom PIM or database.
