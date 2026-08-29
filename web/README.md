@@ -116,3 +116,11 @@ Code-complete means the secret-free checks pass. Release-verified additionally r
 ## Deployment boundary
 
 Deploy with `web` as the application root. Keep the Supabase service role key and OpenAI key server-side. This Phase 1 build is suitable for a controlled demonstration. It is not ready for public multi-user production until Phase 2 adds authentication, product ownership, user-scoped row-level security, and rate limiting.
+
+## Retrieval and scoring design decisions
+
+- **Structured intent plus embeddings:** shopper text is parsed into a typed intent with the OpenAI Responses API, while `text-embedding-3-small` creates a 1,536-dimensional vector for semantic matching. We do not depend on a heavyweight NLP keyword package; deterministic ranking handles hard constraints after retrieval.
+- **Hybrid market RAG:** market signals use Supabase/PostgreSQL full-text search (`tsvector`/`websearch_to_tsquery`) and Supabase `pgvector` similarity, fused with reciprocal rank. This keeps exact terms such as `oily skin`, `vegan`, or `under S$50` useful while still handling semantic phrasing.
+- **Vector product retrieval:** products are filtered by detected category and searched with an HNSW vector index. The product match function returns the complete product row in one database round trip, avoiding a second detail query.
+- **Latency controls:** intent parsing and embedding generation run concurrently. A five-minute in-process cache reuses identical query artifacts during warm server instances; failed requests are removed from the cache.
+- **Deterministic recommendation scoring:** after retrieval, hard constraints, preference coverage, evidence quality, and semantic similarity are scored locally. The seller-facing matrix weights product facts (30%), shopper intent (25%), evidence (20%), search language (15%), and consistency (10%).

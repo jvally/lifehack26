@@ -124,7 +124,7 @@ describe("seedDemoData", () => {
 
     expect(data.products).toHaveLength(22);
     expect(data.queries).toHaveLength(20);
-    expect(data.marketSignals).toHaveLength(42);
+    expect(data.marketSignals).toHaveLength(22);
     expect(data.featureDefinitions).toHaveLength(12);
     expect(data.queries.every((query) => querySignalIds.has(query.id))).toBe(
       true,
