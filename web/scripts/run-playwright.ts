@@ -157,7 +157,7 @@ async function main() {
       await assertLocalPortAvailable(config.baseURL);
       const buildCode = await runCommand(
         process.execPath,
-        [nextCli, "build"],
+        [nextCli, "build", "--webpack"],
         config.environment,
       );
       if (buildCode !== 0) return buildCode;
