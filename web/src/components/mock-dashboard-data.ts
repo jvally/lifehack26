@@ -28,14 +28,14 @@ export function makeMockDashboard(productId: string, sourceListing?: string): Da
     ?.split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean) ?? [];
-  const priceMatch = sourceListing?.match(/(?:S\$|SGD\s*)(\d+(?:\.\d{1,2})?)/i);
+  const priceMatch = sourceListing?.match(/(?:price\s*:\s*)?(?:S\$|SGD\s*|\$)\s*(\d+(?:\.\d{1,2})?)/i);
   const basePassport: ProductPassport = {
       productId,
       name: listingLines[0] ?? "CloudRun Pro",
       category: "running_shoes",
       description: listingLines.slice(1).join(" ") || "A lightweight and comfortable running shoe suitable for all runners. Made with premium materials.",
-      price: priceMatch ? Number(priceMatch[1]) : 179,
-      currency: priceMatch ? "SGD" : "SGD",
+      price: priceMatch ? Number(priceMatch[1]) : null,
+      currency: priceMatch ? "SGD" : null,
       features: runningShoeFeatures.map((feature) => ({ key: feature.key, label: feature.label, value: null, unit: feature.unit, status: "missing", confidence: 0, evidenceIds: [] })),
       useCases: ["Everyday running"], suitableContexts: [], limitations: [], updatedAt: "2026-08-29T00:00:00.000Z",
     };

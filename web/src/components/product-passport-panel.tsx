@@ -23,6 +23,7 @@ export function ProductPassportPanel({
   onSaveFeature?: (key: string, value: FeatureScalar) => Promise<void>;
 }) {
   const visibleFeatureKeys = new Set([
+    "price",
     "weight",
     "terrain",
     "durability",
@@ -30,7 +31,24 @@ export function ProductPassportPanel({
     "cushioning",
     "distance_suitability",
   ]);
-  const visibleDefinitions = definitions.filter(({ key }) => visibleFeatureKeys.has(key));
+  const priceDefinition: FeatureDefinition = {
+    key: "price",
+    label: "Price",
+    dataType: "number",
+    unit: "SGD",
+    required: false,
+    demandWeight: 0.8,
+    constraintImportance: 0.8,
+    competitiveCoverage: 0.8,
+    competitiveDirection: "lower",
+    answerability: 1,
+    evidenceRequired: false,
+    synonyms: ["cost", "price"],
+  };
+  const visibleDefinitions = [
+    ...(passport.price === null ? [priceDefinition] : []),
+    ...definitions.filter(({ key }) => visibleFeatureKeys.has(key) && key !== "price"),
+  ];
   const [expandedFeatureKeys, setExpandedFeatureKeys] = useState<string[]>([]);
   const [overflowingFeatureKeys, setOverflowingFeatureKeys] = useState<string[]>([]);
   const [savingFeatureKeys, setSavingFeatureKeys] = useState<string[]>([]);
@@ -39,12 +57,13 @@ export function ProductPassportPanel({
   const previewRefs = useRef(new Map<string, HTMLParagraphElement>());
   const saveTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const [draftValues, setDraftValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      passport.features.map((feature) => [
+    Object.fromEntries([
+      ...(passport.price === null ? [["price", ""]] : []),
+      ...passport.features.map((feature) => [
         feature.key,
         feature.value === null ? "" : displayValue(feature.value),
       ]),
-    ),
+    ]),
   );
   const byKey = new Map(passport.features.map((feature) => [feature.key, feature]));
 

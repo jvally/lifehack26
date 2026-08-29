@@ -54,6 +54,21 @@ export async function PATCH(
       );
     }
     const intelligence = await loadIntelligence(productId, dependencies);
+    if (update.featureKey === "price") {
+      if (typeof update.value !== "number" || !Number.isFinite(update.value) || update.value < 0) {
+        throw new ApiRequestError("INVALID_PRICE", "Price must be a non-negative number.", 400);
+      }
+      const passport = {
+        ...product.passport,
+        price: update.value,
+        currency: product.passport.currency ?? "SGD",
+        updatedAt: new Date().toISOString(),
+      };
+      await dependencies.products.savePassport(productId, passport);
+      const evaluation = evaluateListing(passport, intelligence);
+      await dependencies.products.saveEvaluation(productId, evaluation);
+      return apiSuccess({ passport, evaluation });
+    }
     const definition = intelligence.features.find(
       (feature) => feature.key === update.featureKey,
     );

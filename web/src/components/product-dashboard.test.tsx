@@ -56,8 +56,8 @@ describe("ProductDashboard", () => {
 
     await userEvent.type(weightInput, "220");
     expect(weightInput).toHaveValue("220");
-    expect(within(passport).getAllByRole("button", { name: "Save" })).toHaveLength(6);
-    await userEvent.click(within(passport).getAllByRole("button", { name: "Save" })[0]);
+    expect(within(passport).getAllByRole("button", { name: "Save" })).toHaveLength(7);
+    await userEvent.click(within(weightInput.closest("div") as HTMLElement).getByRole("button", { name: "Save" }));
     expect(within(passport).getByRole("button", { name: "Saving…" })).toBeDisabled();
     expect(
       within(passport).queryByRole("button", { name: /show more/i }),
@@ -85,9 +85,16 @@ describe("ProductDashboard", () => {
     const weightInput = within(passport).getByLabelText("Measured weight");
 
     await userEvent.type(weightInput, "220");
-    await userEvent.click(within(passport).getAllByRole("button", { name: "Save" })[0]);
+    await userEvent.click(within(weightInput.closest("div") as HTMLElement).getByRole("button", { name: "Save" }));
 
     expect(await within(passport).findByText("Saved")).toBeInTheDocument();
     expect(Number(readiness.textContent)).toBeGreaterThan(initialScore);
+  });
+
+  it("shows price as an editable Product Truth field when the listing has no price", async () => {
+    render(<ProductDashboard productId="product-no-price" offlineDemo />);
+
+    const passport = await screen.findByRole("region", { name: "CloudRun Pro" });
+    expect(within(passport).getByLabelText("Price")).toBeInTheDocument();
   });
 });
