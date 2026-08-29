@@ -1,12 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #18181b;
+  --canvas: #f7faff;
+  --surface: #ffffff;
+  --ink: #101828;
+  --muted: #475467;
+  --border: #d0d5dd;
+  --primary: #2563eb;
+  --primary-strong: #4f46e5;
+  --navy: #0b1535;
+  --verified: #16865a;
+  --missing: #d14545;
+  --inferred: #c27a10;
 }
 
+* { box-sizing: border-box; }
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button, input, textarea, select { font: inherit; }
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 40%, white);
+  outline-offset: 2px;
+}
+
+.surface-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(37 99 235 / 7%);
+}
+
+.changed-feature { animation: feature-highlight 1.5s ease-out; }
+
+@keyframes feature-highlight {
+  0%, 65% { box-shadow: 0 0 0 3px rgb(79 70 229 / 45%); }
+  100% { box-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
