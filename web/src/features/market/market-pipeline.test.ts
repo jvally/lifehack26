@@ -14,7 +14,7 @@ describe("market intelligence pipeline", () => {
     const embeddings = new FakeEmbeddingService();
     const market = new InMemoryMarketRepository();
     const imported = await importMarketSignals(rawSignals, { embeddings, market });
-    expect(imported).toHaveLength(4);
+    expect(imported).toHaveLength(22);
     expect(imported.every((signal) => MarketSignalSchema.safeParse(signal).success)).toBe(true);
 
     const retrieved = await retrieveMarketContext(
@@ -24,6 +24,6 @@ describe("market intelligence pipeline", () => {
     );
     expect(retrieved).toHaveLength(3);
     expect(retrieved.every((signal) => signal.category === "running_shoes")).toBe(true);
-    expect(retrieved.some((signal) => signal.id === "query-humid-half-marathon")).toBe(true);
+    expect(retrieved.some((signal) => signal.id === "humid-half-marathon")).toBe(true);
   });
 });
