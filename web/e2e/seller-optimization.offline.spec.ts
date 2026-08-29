@@ -52,7 +52,7 @@ test("seller improves a listing in the offline demo", async ({ page }) => {
     .getByLabel("Supporting evidence")
     .fill("Specification sheet: CloudRun Pro weighs 220 g at men's US size 9.");
   await coach.getByRole("button", { name: "Save answer" }).click();
-  await expect(page.getByText("Verified")).toBeVisible();
+  await expect(page.getByText("Verified", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Compare recommendations" }).click();
   await expect(page.getByRole("heading", { name: "Before" })).toBeVisible();
