@@ -63,4 +63,48 @@ describe("extractProductPassport", () => {
     expect(savedProductId).toBe("product-cloudrun");
     expect(savedEmbedding).toHaveLength(1536);
   });
+
+  it("normalizes nullable catalog fields before calling the AI gateway", async () => {
+    const products: ProductExtractionRepository = {
+      async savePassport() {},
+      async saveEmbedding() {},
+    };
+    const ai = new FakeAiGateway({
+      async extractProduct(input) {
+        expect(input.externalId).toBeUndefined();
+        expect(input.sourceType).toBeUndefined();
+        return {
+          name: "Imported competitor",
+          category: "running_shoes",
+          description: "Imported challenge record",
+          price: null,
+          currency: null,
+          features: [],
+          useCases: [],
+          suitableContexts: [],
+          limitations: [],
+        };
+      },
+      async parseQuery() {
+        throw new Error("unused");
+      },
+      async verifyEvidence() {
+        throw new Error("unused");
+      },
+    });
+
+    await extractProductPassport(
+      {
+        id: "challenge-product",
+        externalId: null,
+        name: "Imported competitor",
+        category: "running_shoes",
+        rawListing: "Imported challenge record",
+        price: null,
+        currency: null,
+        sourceType: "challenge_database",
+      },
+      { ai, embeddings: new FakeEmbeddingService(), products },
+    );
+  });
 });

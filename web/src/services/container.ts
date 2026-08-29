@@ -6,7 +6,7 @@ import { SupabaseMarketRepository } from "./repositories/supabase-market-reposit
 import { SupabaseProductRepository } from "./repositories/supabase-product-repository";
 import { SupabaseSessionRepository } from "./repositories/supabase-session-repository";
 
-export function getApplicationDependencies() {
+function createApplicationDependencies() {
   return {
     ai: new OpenAIAiGateway(),
     embeddings: new OpenAIEmbeddingService(),
@@ -15,4 +15,15 @@ export function getApplicationDependencies() {
     sessions: new SupabaseSessionRepository(),
     evidence: new SupabaseEvidenceRepository(),
   };
+}
+
+export type ApplicationDependencies = ReturnType<
+  typeof createApplicationDependencies
+>;
+
+let applicationDependencies: ApplicationDependencies | null = null;
+
+export function getApplicationDependencies(): ApplicationDependencies {
+  applicationDependencies ??= createApplicationDependencies();
+  return applicationDependencies;
 }

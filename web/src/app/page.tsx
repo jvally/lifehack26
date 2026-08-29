@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main id="main-content" className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center px-6 py-16">
@@ -10,12 +12,12 @@ export default function Home() {
       <p className="mt-5 max-w-2xl text-xl leading-8 text-slate-600">
         Give every product the evidence it needs to answer an AI shopper.
       </p>
-      <a
+      <Link
         className="mt-8 w-fit rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-medium text-white shadow-lg shadow-blue-600/20 transition hover:brightness-110"
         href="/products/new"
       >
         Analyze a listing
-      </a>
+      </Link>
     </main>
   );
 }

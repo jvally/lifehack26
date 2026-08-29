@@ -27,7 +27,8 @@ export function rankProducts(
   intent: QueryIntent,
   inputs: CandidateInput[],
 ): RecommendationResult {
-  const candidates = inputs.map(({ passport, similarity }) => {
+  const candidates: RecommendationResult["candidates"] = inputs.map(
+    ({ passport, similarity }) => {
     const features = new Map(
       passport.features.map((feature) => [feature.key, feature]),
     );
@@ -92,17 +93,18 @@ export function rankProducts(
         ),
       ),
     );
-    return {
-      productId: passport.productId,
-      eligible:
-        failedConstraints.length === 0 && missingEvidence.length === 0,
-      rank: null,
-      fitScore,
-      matchedFacts: matchedTerms,
-      failedConstraints,
-      missingEvidence,
-    };
-  });
+      return {
+        productId: passport.productId,
+        eligible:
+          failedConstraints.length === 0 && missingEvidence.length === 0,
+        rank: null,
+        fitScore,
+        matchedFacts: matchedTerms,
+        failedConstraints,
+        missingEvidence,
+      };
+    },
+  );
   const eligible = candidates
     .filter((candidate) => candidate.eligible)
     .sort(

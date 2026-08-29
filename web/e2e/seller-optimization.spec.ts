@@ -10,10 +10,11 @@ test("seller improves a listing and recommendation outcome", async ({ page }) =>
   await expect(page.getByText("AI Readiness")).toBeVisible();
   const initialScore = Number(await page.getByTestId("readiness-total").textContent());
   await page.getByRole("button", { name: "Open seller coach" }).first().click();
-  await expect(page.getByText(/measured weight/i)).toBeVisible();
-  await page.getByLabel("Your answer").fill("220");
-  await page.getByLabel("Supporting evidence").fill("Specification sheet: CloudRun Pro weighs 220 g at men's US size 9.");
-  await page.getByRole("button", { name: "Save answer" }).click();
+  const coach = page.getByRole("region", { name: "One answer, more coverage" });
+  await expect(coach.getByText(/what is the measured weight/i)).toBeVisible();
+  await coach.getByLabel("Your answer").fill("220");
+  await coach.getByLabel("Supporting evidence").fill("Specification sheet: CloudRun Pro weighs 220 g at men's US size 9.");
+  await coach.getByRole("button", { name: "Save answer" }).click();
   await expect(page.getByText("Verified")).toBeVisible();
   await page.getByRole("button", { name: "Compare recommendations" }).click();
   await expect(page.getByRole("heading", { name: "Before" })).toBeVisible();

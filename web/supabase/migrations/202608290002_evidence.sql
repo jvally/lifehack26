@@ -13,3 +13,6 @@ create table evidence_records (
 
 alter table evidence_records enable row level security;
 create index evidence_records_product_idx on evidence_records(product_id);
+
+create policy evidence_records_block_client_access on evidence_records
+for all to anon, authenticated using (false) with check (false);

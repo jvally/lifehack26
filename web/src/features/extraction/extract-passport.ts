@@ -1,11 +1,18 @@
 import { ProductPassportSchema, type ProductPassport } from "@/domain/passport";
-import type { AiGateway, RawProductInput } from "@/services/ai-gateway";
+import type {
+  AiGateway,
+  RawProductInput as AiRawProductInput,
+} from "@/services/ai-gateway";
 import {
   EMBEDDING_DIMENSIONS,
   type EmbeddingService,
 } from "@/services/embeddings";
+import type { RawProductInput } from "@/services/repositories/contracts";
 
-export type ExtractableProduct = RawProductInput & { id: string };
+export type ExtractableProduct = Omit<RawProductInput, "externalId"> & {
+  id: string;
+  externalId?: string | null;
+};
 
 export interface ProductExtractionRepository {
   savePassport(productId: string, passport: ProductPassport): Promise<void>;
@@ -40,7 +47,18 @@ export async function extractProductPassport(
   },
   now: Date = new Date(),
 ): Promise<ProductPassport> {
-  const draft = await dependencies.ai.extractProduct(product);
+  const aiInput: AiRawProductInput = {
+    name: product.name,
+    category: product.category,
+    rawListing: product.rawListing,
+    price: product.price,
+    currency: product.currency,
+    ...(product.externalId == null ? {} : { externalId: product.externalId }),
+    ...(product.sourceType === "challenge_database"
+      ? {}
+      : { sourceType: product.sourceType }),
+  };
+  const draft = await dependencies.ai.extractProduct(aiInput);
   const passport = ProductPassportSchema.parse({
     ...draft,
     productId: product.id,
