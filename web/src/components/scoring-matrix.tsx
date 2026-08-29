@@ -9,8 +9,8 @@ const rows: Array<{ key: Exclude<keyof ScoreBreakdown, "total">; label: string; 
 ];
 
 export function ScoringMatrix({ readiness }: { readiness: ScoreBreakdown }) {
-  return <div className="mt-6 overflow-hidden rounded-xl border border-slate-200" data-testid="scoring-matrix">
-    <div className="grid grid-cols-[1fr_4rem_3rem] gap-3 bg-slate-50 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500"><span>AI recommendation score</span><span>Weight</span><span>Score</span></div>
-    {rows.map((row) => <div key={row.key} className="grid grid-cols-[1fr_4rem_3rem] gap-3 border-t border-slate-100 px-3 py-3 text-xs"><div><p className="font-semibold text-slate-800">{row.label}</p><p className="mt-0.5 text-slate-500">{row.purpose}</p></div><span className="text-slate-500">{row.weight}</span><span className="font-bold text-slate-900">{Math.round(readiness[row.key])}</span></div>)}
+  return <div className="mt-7 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--canvas)]" data-testid="scoring-matrix">
+    <div className="grid grid-cols-[1fr_4rem_3rem] gap-3 bg-[var(--cream-dark)] px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]"><span>AI recommendation score</span><span>Weight</span><span>Score</span></div>
+    {rows.map((row) => <div key={row.key} className="grid grid-cols-[1fr_4rem_3rem] gap-3 border-t border-[var(--border)] px-3 py-3 text-xs"><div><p className="font-semibold text-[var(--ink)]">{row.label}</p><p className="mt-1 leading-5 text-[var(--muted)]">{row.purpose}</p></div><span className="text-[var(--muted)]">{row.weight}</span><span className="font-bold text-[var(--ink)]">{Math.round(readiness[row.key])}</span></div>)}
   </div>;
 }
